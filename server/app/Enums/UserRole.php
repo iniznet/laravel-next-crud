@@ -3,11 +3,13 @@
 enum UserRole: string {
     case ADMIN = 'admin';
     case CUSTOMER = 'customer';
+    case TECHNICIAN = 'technician';
 
     public function label(): string {
         return match ($this) {
-            UserRole::ADMIN => 'Admin',
-            UserRole::CUSTOMER => 'Customer',
+            UserRole::ADMIN => __('Admin'),
+            UserRole::CUSTOMER => __('Customer'),
+            UserRole::TECHNICIAN => __('Technician'),
         };
     }
 
@@ -17,5 +19,9 @@ enum UserRole: string {
 
     public function isAdmin(): bool {
         return $this === UserRole::ADMIN;
+    }
+
+    public function isTechnician(): bool {
+        return $this === UserRole::TECHNICIAN;
     }
 }
