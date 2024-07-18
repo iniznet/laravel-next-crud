@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SparePartController;
@@ -31,6 +32,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{receipt}', [ReceiptController::class, 'show']);
         Route::put('/{receipt}', [ReceiptController::class, 'update']);
         Route::delete('/{receipt}', [ReceiptController::class, 'destroy']);
+    });
+
+    Route::prefix('invoices')->group(function () {
+        Route::get('/', [InvoiceController::class, 'index']);
+        Route::post('/', [InvoiceController::class, 'store']);
+        Route::get('/{invoice}', [InvoiceController::class, 'show']);
+        Route::put('/{invoice}', [InvoiceController::class, 'update']);
+        Route::delete('/{invoice}', [InvoiceController::class, 'destroy']);
     });
 });
 
