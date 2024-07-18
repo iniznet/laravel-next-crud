@@ -50,4 +50,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Service::class);
     }
+
+    public function spareParts()
+    {
+        return $this->hasMany(SparePart::class);
+    }
+
+    public function receipts()
+    {
+        return $this->hasMany(Receipt::class);
+    }
 }
