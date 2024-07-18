@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             ServiceSeeder::class,
             SparePartSeeder::class,
             ReceiptSeeder::class,
+            InvoiceSeeder::class,
         ]);
     }
 }
