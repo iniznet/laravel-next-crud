@@ -19,7 +19,7 @@ class InvoiceFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'PSV' . time(),
+            'code' => $this->faker->unique()->numerify('PSV##########'),
             'receipt_id' => $this->faker->unique()->randomElement(Receipt::pluck('id')->toArray()),
             'user_id' => User::pluck('id')->random(),
             'dp' => $this->faker->randomFloat(2, 1000, 1000000000),

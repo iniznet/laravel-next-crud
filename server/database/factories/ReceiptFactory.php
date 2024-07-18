@@ -18,7 +18,7 @@ class ReceiptFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => 'R' . time(),
+            'code' => $this->faker->unique()->numerify('SV##########'),
             'customer_id' => User::where('role', 'customer')->pluck('id')->random(),
             'receiver_id' => User::where('role', 'admin')->pluck('id')->random(),
             'technician_id' => User::where('role', 'technician')->pluck('id')->random(),
