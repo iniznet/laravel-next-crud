@@ -43,10 +43,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::prefix('api')->group(function () {
-    Route::prefix('auth')->group(function () {
-        Route::post('register', RegisterController::class);
-        Route::post('login', LoginController::class);
-        Route::post('logout', LogoutController::class);
-    });
+Route::prefix('auth')->group(function () {
+    Route::post('register', RegisterController::class);
+    Route::post('login', LoginController::class);
+    Route::post('logout', LogoutController::class);
 });
