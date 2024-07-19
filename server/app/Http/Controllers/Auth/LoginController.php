@@ -10,9 +10,24 @@ class LoginController extends Controller
 {
     public function __invoke(LoginRequest $request)
     {
-        $request->authenticate();
-        $request->session()->regenerate();
+        if (Auth::check()) {
+            return response()->json(['message' => 'Already logged in'], 200);
+        }
 
-        return response()->json(Auth::user());
+        $credentials = $request->validated();
+
+        if (Auth::attempt($credentials, $request->remember ?? false)) {
+            $request->session()->regenerate();
+
+            $user = Auth::user();
+            $token = $user->createToken('authToken')->plainTextToken;
+
+            return response()->json([
+                'user' => $user,
+                'token' => $token
+            ], 200);
+        }
+
+        return response()->json(['message' => 'Invalid credentials'], 401);
     }
 }

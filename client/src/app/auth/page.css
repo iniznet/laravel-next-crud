@@ -123,7 +123,7 @@ form button {
     font-weight: 700;
 }
 
-form .register-link {
+.register-link {
     font-size: 14.5px;
     text-align: center;
     margin: 20px 0 15px;
@@ -137,4 +137,21 @@ form .register-link {
 
 .register-link p a:hover {
     text-decoration: underline;
+}
+
+.message {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
 }
