@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
+    use ApiResponse;
+
     public function __invoke(LoginRequest $request)
     {
         if (Auth::check()) {
-            return response()->json(['message' => 'Already logged in'], 200);
+            return $this->respondAuthenticated(__('You are already authenticated!'));
         }
 
         $credentials = $request->validated();
@@ -22,12 +25,15 @@ class LoginController extends Controller
             $user = Auth::user();
             $token = $user->createToken('authToken')->plainTextToken;
 
-            return response()->json([
-                'user' => $user,
-                'token' => $token
-            ], 200);
+            return $this->respondWithSuccess(
+                __('Successfully logged in, please wait...'),
+                [
+                    'data' => $user,
+                    'token' => $token,
+                ]
+            );
         }
 
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        return $this->respondNotFound(__('Login failed. Please check your credentials.'));
     }
 }

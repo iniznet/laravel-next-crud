@@ -7,11 +7,10 @@ const api = axios.create({
     baseURL: config.apiUrl,
     withCredentials: true,
     withXSRFToken: true,
+    validateStatus: () => true,
 });
 
 api.get('/sanctum/csrf-cookie');
-
-console.log('api.defaults.headers', api.defaults.headers);
 
 export const login = async (data: UserData) => {
     return api.post('/auth/login', data);
