@@ -28,7 +28,12 @@ const LoginRegister: React.FC = () => {
         if (response.status === 200) {
             setMessage({ type: 'success', content: response.data.message });
         } else {
-            setMessage({ type: 'error', content: response.data.message, fieldErrors: response.data.errors });
+            setMessage({
+                type: 'error', content: response.data.message, fieldErrors: {
+                    email: 'Invalid email or password',
+                    password: 'Invalid email or password',
+                }
+            });
         }
     };
 
