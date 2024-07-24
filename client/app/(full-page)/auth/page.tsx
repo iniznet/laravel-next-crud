@@ -8,6 +8,7 @@ import { Message } from '@/types/message';
 import { UserData } from '@/types/user';
 import LoginForm from '@/app/components/LoginForm';
 import RegisterForm from '@/app/components/RegisterForm';
+import { useRouter } from 'next/navigation';
 
 const LoginRegister: React.FC = () => {
     const [isRegisterActive, setIsRegisterActive] = useState(false);
@@ -24,14 +25,23 @@ const LoginRegister: React.FC = () => {
 
         if (response.status === 200) {
             setMessage({ type: 'success', content: response.data.message });
+
+            document.cookie = `sanctum_token=${response.data.token}; path=/`;
+
+            setTimeout(() => {
+                const router = useRouter();
+                router.push('/');
+            }, 2000);
         } else {
+            const fieldErrors = response.status === 422 ? (response.data.errors || {}) : {
+                email: 'Invalid email or password',
+                password: 'Invalid email or password',
+            };
+
             setMessage({
                 type: 'error',
                 content: response.data.message,
-                fieldErrors: {
-                    email: 'Invalid email or password',
-                    password: 'Invalid email or password',
-                }
+                fieldErrors,
             });
         }
     };

@@ -22,10 +22,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, fieldErrors }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState<boolean>(false);
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit({ email, password, remember: rememberMe });
+        setLoading(true);
+        await onSubmit({ email, password, remember: rememberMe });
+        setLoading(false);
     };
 
     return (
@@ -67,7 +70,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, fieldErrors }) => {
                     />
                     <label htmlFor="rememberMe">Remember me</label>
                 </div>
-                <Button type="submit" label="Sign In" className="mt-2" />
+                <Button type="submit" label="Sign In" className="mt-2" loading={loading} />
             </div>
         </form>
     );

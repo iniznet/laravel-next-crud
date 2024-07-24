@@ -19,4 +19,8 @@ export const register = async (data: UserData) => {
     return api.post('/auth/register', data);
 };
 
+export const authenticated = async () => {
+    return api.get('/auth');
+};
+
 export default api;

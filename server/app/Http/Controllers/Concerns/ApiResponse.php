@@ -47,11 +47,14 @@ trait ApiResponse
         );
     }
 
-    public function respondAuthenticated(?string $message = null): JsonResponse
+    public function respondAuthenticated(?string $message = null, int $response = Response::HTTP_OK): JsonResponse
     {
         return $this->apiResponse(
-            data: ['message' => $message ?? 'Authenticated'],
-            code: Response::HTTP_FORBIDDEN
+            data: [
+                'message' => $message ?? 'Authenticated',
+                'data' => auth('sanctum')->user()
+            ],
+            code: $response
         );
     }
 
