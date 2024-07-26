@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { classNames } from 'primereact/utils';
 import { LayoutContext } from '../../../layout/context/layoutcontext';
 import { login, register } from '@/app/utils/api';
@@ -14,6 +14,7 @@ const LoginRegister: React.FC = () => {
     const [isRegisterActive, setIsRegisterActive] = useState(false);
     const [message, setMessage] = useState<Message | null>(null);
     const { layoutConfig } = useContext(LayoutContext);
+    const router = useRouter();
 
     const toggleForm = () => {
         setIsRegisterActive(!isRegisterActive);
@@ -29,9 +30,8 @@ const LoginRegister: React.FC = () => {
             document.cookie = `sanctum_token=${response.data.token}; path=/`;
 
             setTimeout(() => {
-                const router = useRouter();
                 router.push('/');
-            }, 2000);
+            }, 1000);
         } else {
             const fieldErrors = response.status === 422 ? (response.data.errors || {}) : {
                 email: 'Invalid email or password',
