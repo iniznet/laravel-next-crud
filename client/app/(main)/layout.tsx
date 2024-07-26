@@ -1,8 +1,6 @@
 'use client';
 
-import React, { ReactNode, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { AuthProvider, useAuth } from '../../contexts/AuthContext'; // Adjust the import path as needed
+import { AuthProvider } from '../../contexts/AuthContext';
 import Layout from '@/layout/layout';
 
 interface AppLayoutProps {

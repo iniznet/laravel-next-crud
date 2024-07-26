@@ -5,7 +5,7 @@ import axios from 'axios';
 export async function GET(request: NextRequest) {
     try {
         console.log(request.cookies.get('sanctum_token'))
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/user`, {
             headers: {
                 'Authorization': `Bearer ${request.cookies.get('sanctum_token')?.value}`, // Use request.cookies.get in App Router
             },

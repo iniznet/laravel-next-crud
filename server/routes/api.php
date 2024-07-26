@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\AuthenticatedController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
+use Illuminate\Http\Request;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('services')->group(function () {

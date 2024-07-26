@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const checkAuth = async () => {
             try {
                 const response = await axios.get('/api/auth/user'); // Your API endpoint to check user
-                setIsAuthenticated(response.status === 200);
+                setIsAuthenticated(response.status === 200 && response.data.role === 'admin');
             } catch (error) {
                 setIsAuthenticated(false);
             } finally {
