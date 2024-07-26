@@ -13,7 +13,28 @@ const AppMenu = () => {
     const model: AppMenuItem[] = [
         {
             label: 'Home',
-            items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
+            items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
+                {
+                    label: 'Sparepart',
+                    icon: 'pi pi-fw pi-pencil',
+                    to: '/pages/Sparepart'
+                },
+                {
+                    label: 'Service',
+                    icon: 'pi pi-fw pi-pencil',
+                    to: '/pages/Service'
+                },
+                {
+                    label: 'Nota Service',
+                    icon: 'pi pi-fw pi-pencil',
+                    to: '/pages/NotaService'
+                },
+                {
+                    label: 'Pembayaran',
+                    icon: 'pi pi-fw pi-pencil',
+                    to: '/pages/Pembayaran'
+                },
+            ]
         },
         {
             label: 'UI Components',
@@ -80,11 +101,6 @@ const AppMenu = () => {
                             to: '/auth/access'
                         }
                     ]
-                },
-                {
-                    label: 'Crud',
-                    icon: 'pi pi-fw pi-pencil',
-                    to: '/pages/crud'
                 },
                 {
                     label: 'Timeline',
