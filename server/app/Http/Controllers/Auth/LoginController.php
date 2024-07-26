@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Controllers\Concerns\ApiResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class LoginController extends Controller
 {
@@ -14,7 +15,7 @@ class LoginController extends Controller
     public function __invoke(LoginRequest $request)
     {
         if (Auth::check()) {
-            return $this->respondAuthenticated(__('You are already authenticated!'));
+            return $this->respondAuthenticated(__('You are already authenticated!'), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $credentials = $request->validated();

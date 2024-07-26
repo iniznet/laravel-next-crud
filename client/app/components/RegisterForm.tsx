@@ -21,10 +21,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit, fieldErrors }) =>
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         onSubmit({ name, email, password, confirmPassword });
+        setLoading(false);
     };
 
     return (
@@ -82,7 +85,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit, fieldErrors }) =>
                     </span>
                     {fieldErrors?.confirmPassword && <small className="p-error">{fieldErrors.confirmPassword}</small>}
                 </div>
-                <Button type="submit" label="Register" className="mt-2" />
+                <Button type="submit" label="Register" className="mt-2" loading={loading} />
             </div>
         </form>
     );

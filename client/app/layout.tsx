@@ -1,3 +1,4 @@
+// client/app/layout.tsx
 'use client';
 import { LayoutProvider } from '../layout/context/layoutcontext';
 import { PrimeReactProvider } from 'primereact/api';
@@ -6,6 +7,7 @@ import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
 import '../styles/layout/layout.scss';
 import '../styles/demo/Demos.scss';
+import React, { ReactNode } from 'react';
 
 interface RootLayoutProps {
     children: React.ReactNode;

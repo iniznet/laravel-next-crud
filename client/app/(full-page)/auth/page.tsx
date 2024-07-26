@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { classNames } from 'primereact/utils';
 import { LayoutContext } from '../../../layout/context/layoutcontext';
 import { login, register } from '@/app/utils/api';
@@ -8,11 +8,13 @@ import { Message } from '@/types/message';
 import { UserData } from '@/types/user';
 import LoginForm from '@/app/components/LoginForm';
 import RegisterForm from '@/app/components/RegisterForm';
+import { useRouter } from 'next/navigation';
 
 const LoginRegister: React.FC = () => {
     const [isRegisterActive, setIsRegisterActive] = useState(false);
     const [message, setMessage] = useState<Message | null>(null);
     const { layoutConfig } = useContext(LayoutContext);
+    const router = useRouter();
 
     const toggleForm = () => {
         setIsRegisterActive(!isRegisterActive);
@@ -24,14 +26,22 @@ const LoginRegister: React.FC = () => {
 
         if (response.status === 200) {
             setMessage({ type: 'success', content: response.data.message });
+
+            document.cookie = `sanctum_token=${response.data.token}; path=/`;
+
+            setTimeout(() => {
+                router.push('/');
+            }, 1000);
         } else {
+            const fieldErrors = response.status === 422 ? (response.data.errors || {}) : {
+                email: 'Invalid email or password',
+                password: 'Invalid email or password',
+            };
+
             setMessage({
                 type: 'error',
                 content: response.data.message,
-                fieldErrors: {
-                    email: 'Invalid email or password',
-                    password: 'Invalid email or password',
-                }
+                fieldErrors,
             });
         }
     };
