@@ -18,7 +18,7 @@ import { ProductService } from '../../../../demo/service/ProductService';
 import { Demo } from '@/types';
 
 /* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
-const Crud = () => {
+const Sparepart = () => {
     let emptyProduct: Demo.Product = {
         id: '',
         name: '',
@@ -258,15 +258,6 @@ const Crud = () => {
         );
     };
 
-    const ratingBodyTemplate = (rowData: Demo.Product) => {
-        return (
-            <>
-                <span className="p-column-title">Reviews</span>
-                <Rating value={rowData.rating} readOnly cancel={false} />
-            </>
-        );
-    };
-
     const statusBodyTemplate = (rowData: Demo.Product) => {
         return (
             <>
@@ -344,7 +335,6 @@ const Crud = () => {
                         <Column header="Image" body={imageBodyTemplate}></Column>
                         <Column field="price" header="Price" body={priceBodyTemplate} sortable></Column>
                         <Column field="category" header="Category" sortable body={categoryBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
-                        <Column field="rating" header="Reviews" body={ratingBodyTemplate} sortable></Column>
                         <Column field="inventoryStatus" header="Status" body={statusBodyTemplate} sortable headerStyle={{ minWidth: '10rem' }}></Column>
                         <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                     </DataTable>
@@ -427,4 +417,4 @@ const Crud = () => {
     );
 };
 
-export default Crud;
+export default Sparepart;
