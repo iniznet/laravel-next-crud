@@ -342,6 +342,20 @@ const Sparepart = () => {
                     <Dialog visible={productDialog} style={{ width: '450px' }} header="Product Details" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
                         {product.image && <img src={`/demo/images/product/${product.image}`} alt={product.image} width="150" className="mt-0 mx-auto mb-5 block shadow-2" />}
                         <div className="field">
+                            <label htmlFor="code">Code</label>
+                            <InputText
+                                id="code"
+                                value={product.code}
+                                onChange={(e) => onInputChange(e, 'code')}
+                                required
+                                autoFocus
+                                className={classNames({
+                                    'p-invalid': submitted && !product.code
+                                })}
+                            />
+                            {submitted && !product.code && <small className="p-invalid">Code is required.</small>}
+                        </div>
+                        <div className="field">
                             <label htmlFor="name">Name</label>
                             <InputText
                                 id="name"
