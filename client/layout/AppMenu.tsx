@@ -14,26 +14,26 @@ const AppMenu = () => {
         {
             label: 'Home',
             items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
-                {
-                    label: 'Sparepart',
-                    icon: 'pi pi-fw pi-pencil',
-                    to: '/pages/Sparepart'
-                },
-                {
-                    label: 'Service',
-                    icon: 'pi pi-fw pi-pencil',
-                    to: '/pages/Service'
-                },
-                {
-                    label: 'Nota Service',
-                    icon: 'pi pi-fw pi-pencil',
-                    to: '/pages/NotaService'
-                },
-                {
-                    label: 'Pembayaran',
-                    icon: 'pi pi-fw pi-pencil',
-                    to: '/pages/Pembayaran'
-                },
+            {
+                label: 'Sparepart',
+                icon: 'pi pi-fw pi-pencil',
+                to: '/pages/sparepart'
+            },
+            {
+                label: 'Service',
+                icon: 'pi pi-fw pi-pencil',
+                to: '/pages/service'
+            },
+            {
+                label: 'Nota Service',
+                icon: 'pi pi-fw pi-pencil',
+                to: '/pages/nota'
+            },
+            {
+                label: 'Pembayaran',
+                icon: 'pi pi-fw pi-pencil',
+                to: '/pages/pembayaran'
+            },
             ]
         },
         {
