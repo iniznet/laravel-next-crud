@@ -16,22 +16,22 @@ const AppMenu = () => {
             items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
             {
                 label: 'Sparepart',
-                icon: 'pi pi-fw pi-pencil',
+                icon: 'pi pi-fw pi-server',
                 to: '/pages/sparepart'
             },
             {
                 label: 'Service',
-                icon: 'pi pi-fw pi-pencil',
+                icon: 'pi pi-fw pi-wrench',
                 to: '/pages/service'
             },
             {
                 label: 'Nota Service',
-                icon: 'pi pi-fw pi-pencil',
+                icon: 'pi pi-fw pi-inbox',
                 to: '/pages/nota'
             },
             {
                 label: 'Pembayaran',
-                icon: 'pi pi-fw pi-pencil',
+                icon: 'pi pi-fw pi-wallet',
                 to: '/pages/pembayaran'
             },
             ]
