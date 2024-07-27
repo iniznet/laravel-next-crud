@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await axios.get('/api/auth/user'); // Your API endpoint to check user
+                const response = await axios.get('/api/auth/user');
                 setIsAuthenticated(response.status === 200 && response.data.role === 'admin');
             } catch (error) {
                 setIsAuthenticated(false);
