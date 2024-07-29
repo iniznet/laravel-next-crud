@@ -9,6 +9,7 @@ import { UserData } from '@/types/user';
 import LoginForm from '@/app/components/LoginForm';
 import RegisterForm from '@/app/components/RegisterForm';
 import { useRouter } from 'next/navigation';
+import { setCookie } from '@/app/utils/cookie';
 
 const LoginRegister: React.FC = () => {
     const [isRegisterActive, setIsRegisterActive] = useState(false);
@@ -27,7 +28,7 @@ const LoginRegister: React.FC = () => {
         if (response.status === 200) {
             setMessage({ type: 'success', content: response.data.message });
 
-            document.cookie = `sanctum_token=${response.data.token}; path=/`;
+            setCookie('sanctum_token', response.data.token, 60 * 60 * 24 * 365);
 
             setTimeout(() => {
                 router.push('/');
