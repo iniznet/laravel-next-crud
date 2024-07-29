@@ -1,17 +1,22 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\ReceiptController;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\SparePartController;
-use App\Http\Controllers\Auth\AuthenticatedController;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\LogoutController;
-use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\MasterJasaController;
+use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\NotaServiceController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\BarangServiceController;
+use App\Http\Controllers\SparepartServiceController;
+use App\Http\Controllers\Auth\AuthenticatedController;
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('barang-service', BarangServiceController::class);
+    Route::apiResource('master-jasa', MasterJasaController::class);
+    Route::apiResource('nota-service', NotaServiceController::class);
+    Route::apiResource('sparepart-service', SparepartServiceController::class);
+
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
