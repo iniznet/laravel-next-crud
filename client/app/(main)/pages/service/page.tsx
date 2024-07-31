@@ -13,121 +13,121 @@ import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useRef, useState } from 'react';
-import { ProductService } from '../../../../demo/service/ProductService';
-import { Demo } from '@/types';
+import { ServiceAPI } from '@/apis/ServiceApi';
+import { formatCurrency } from '@/app/utils/currency';
+import { Service } from '@/types/service';
 
-/* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
-const Service = () => {
-    let emptyProduct: Demo.Product = {
-        id: '',
-        name: '',
-        description: '',
-        category: '',
-        price: 0,
+const ServicePage = () => {
+    let emptyService: Service = {
+        KODE: '',
+        KETERANGAN: '',
+        ESTIMASIHARGA: 0,
     };
 
-    const [products, setProducts] = useState(null);
-    const [productDialog, setProductDialog] = useState(false);
-    const [deleteProductDialog, setDeleteProductDialog] = useState(false);
-    const [deleteProductsDialog, setDeleteProductsDialog] = useState(false);
-    const [product, setProduct] = useState<Demo.Product>(emptyProduct);
-    const [selectedProducts, setSelectedProducts] = useState(null);
+    const [services, setServices] = useState<Service[]>([]);
+    const [serviceDialog, setServiceDialog] = useState(false);
+    const [deleteServiceDialog, setDeleteServiceDialog] = useState(false);
+    const [deleteServicesDialog, setDeleteServicesDialog] = useState(false);
+    const [service, setService] = useState<Service>(emptyService);
+    const [selectedServices, setSelectedServices] = useState<Service[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
 
     useEffect(() => {
-        ProductService.getProducts().then((data) => setProducts(data as any));
+        loadServices();
     }, []);
 
-    const formatCurrency = (value: number) => {
-        return value.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'IDR'
-        });
+    const loadServices = async () => {
+        try {
+            const data = await ServiceAPI.getAll();
+            setServices(data);
+        } catch (error) {
+            console.error('Error loading services:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load services', life: 3000 });
+        }
     };
 
     const openNew = () => {
-        setProduct(emptyProduct);
+        setService(emptyService);
         setSubmitted(false);
-        setProductDialog(true);
+        setServiceDialog(true);
     };
 
     const hideDialog = () => {
         setSubmitted(false);
-        setProductDialog(false);
+        setServiceDialog(false);
     };
 
-    const hideDeleteProductDialog = () => {
-        setDeleteProductDialog(false);
+    const hideDeleteServiceDialog = () => {
+        setDeleteServiceDialog(false);
     };
 
-    const hideDeleteProductsDialog = () => {
-        setDeleteProductsDialog(false);
+    const hideDeleteServicesDialog = () => {
+        setDeleteServicesDialog(false);
     };
 
-    const saveProduct = () => {
+    const saveService = async () => {
         setSubmitted(true);
 
-        if (product.name.trim()) {
-            let _products = [...(products as any)];
-            let _product = { ...product };
-            if (product.id) {
-                const index = findIndexById(product.id);
+        if (service.KODE.trim()) {
+            try {
+                let response;
+                try {
+                    const existingService = await ServiceAPI.getOne(service.KODE);
+                    if (existingService && existingService.KODE) {
+                        // If a service with the same KODE exists, update it
+                        response = await ServiceAPI.update(service.KODE, service);
+                    } else {
+                        // Otherwise, create a new service
+                        response = await ServiceAPI.create(service);
+                    }
+                } catch (error) {
+                    console.error('Error saving service:', error);
+                    toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save service', life: 3000 });
+                }
 
-                _products[index] = _product;
-                toast.current?.show({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Product Updated',
-                    life: 3000
-                });
-            } else {
-                _product.id = createId();
-                _product.image = 'product-placeholder.svg';
-                _products.push(_product);
-                toast.current?.show({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Product Created',
-                    life: 3000
-                });
+                loadServices();
+                setServiceDialog(false);
+                setService(emptyService);
+                toast.current?.show({ severity: 'success', summary: 'Successful', detail: `Service ${service.KODE ? 'Updated' : 'Created'}`, life: 3000 });
+            } catch (error) {
+                console.error('Error saving service:', error);
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save service', life: 3000 });
             }
-
-            setProducts(_products as any);
-            setProductDialog(false);
-            setProduct(emptyProduct);
         }
     };
 
-    const editProduct = (product: Demo.Product) => {
-        setProduct({ ...product });
-        setProductDialog(true);
+    const editService = (service: Service) => {
+        setService({ ...service });
+        setServiceDialog(true);
     };
 
-    const confirmDeleteProduct = (product: Demo.Product) => {
-        setProduct(product);
-        setDeleteProductDialog(true);
+    const confirmDeleteService = (service: Service) => {
+        setService(service);
+        setDeleteServiceDialog(true);
     };
 
-    const deleteProduct = () => {
-        let _products = (products as any)?.filter((val: any) => val.id !== product.id);
-        setProducts(_products);
-        setDeleteProductDialog(false);
-        setProduct(emptyProduct);
-        toast.current?.show({
-            severity: 'success',
-            summary: 'Successful',
-            detail: 'Product Deleted',
-            life: 3000
-        });
+    const deleteService = async () => {
+        try {
+            await ServiceAPI.delete(service.KODE);
+            loadServices();
+            setDeleteServiceDialog(false);
+            setService(emptyService);
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Service Deleted', life: 3000 });
+        } catch (error) {
+            console.error('Error deleting service:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete service', life: 3000 });
+        }
     };
+
+
 
     const findIndexById = (id: string) => {
         let index = -1;
-        for (let i = 0; i < (products as any)?.length; i++) {
-            if ((products as any)[i].id === id) {
+        for (let i = 0; i < (services as any)?.length; i++) {
+            if ((services as any)[i].id === id) {
                 index = i;
                 break;
             }
@@ -150,50 +150,46 @@ const Service = () => {
     };
 
     const confirmDeleteSelected = () => {
-        setDeleteProductsDialog(true);
+        setDeleteServicesDialog(true);
     };
 
-    const deleteSelectedProducts = () => {
-        let _products = (products as any)?.filter((val: any) => !(selectedProducts as any)?.includes(val));
-        setProducts(_products);
-        setDeleteProductsDialog(false);
-        setSelectedProducts(null);
-        toast.current?.show({
-            severity: 'success',
-            summary: 'Successful',
-            detail: 'Products Deleted',
-            life: 3000
-        });
+    const deleteSelectedServices = async () => {
+        try {
+            if (selectedServices) {
+                await ServiceAPI.bulkDelete((selectedServices as Service[]).map(p => p.KODE));
+            }
+            loadServices();
+            setDeleteServicesDialog(false);
+            setSelectedServices([]);
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Services Deleted', life: 3000 });
+        } catch (error) {
+            console.error('Error deleting services:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete services', life: 3000 });
+        }
     };
 
-    const onCategoryChange = (e: RadioButtonChangeEvent) => {
-        let _product = { ...product };
-        _product['category'] = e.value;
-        setProduct(_product);
-    };
-
-    const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, name: string) => {
+    // Update the onInputChange function
+    const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, name: keyof Service) => {
         const val = (e.target && e.target.value) || '';
-        let _product = { ...product };
-        _product[`${name}`] = val;
+        let _service = { ...service, [name]: val };
 
-        setProduct(_product);
+        setService(_service);
     };
 
-    const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
+    // Update the onInputNumberChange function
+    const onInputNumberChange = (e: InputNumberValueChangeEvent, name: keyof Service) => {
         const val = e.value || 0;
-        let _product = { ...product };
-        _product[`${name}`] = val;
+        let _service = { ...service, [name]: val };
 
-        setProduct(_product);
+        setService(_service);
     };
 
     const leftToolbarTemplate = () => {
         return (
             <React.Fragment>
                 <div className="my-2">
-                    <Button label="New" icon="pi pi-plus" severity="success" className=" mr-2" onClick={openNew} />
-                    <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedProducts || !(selectedProducts as any).length} />
+                    <Button label="New" icon="pi pi-plus" severity="success" className="mr-2" onClick={openNew} />
+                    <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedServices || !selectedServices.length} />
                 </div>
             </React.Fragment>
         );
@@ -208,38 +204,42 @@ const Service = () => {
         );
     };
 
-    const nameBodyTemplate = (rowData: Demo.Product) => {
+    const onSelectionChange = (e: { value: Service[] }) => {
+        setSelectedServices(e.value);
+    };
+
+    const kodeBodyTemplate = (rowData: Service) => {
         return (
             <>
-                <span className="p-column-title">Name</span>
-                {rowData.name}
+                <span className="p-column-title">Kode</span>
+                {rowData.KODE}
             </>
         );
     };
 
-    const descriptionBodyTemplate = (rowData: Demo.Product) => {
+    const keteranganBodyTemplate = (rowData: Service) => {
         return (
             <>
-                <span className="p-column-title">Description</span>
-                {rowData.description}
+                <span className="p-column-title">Keterangan</span>
+                {rowData.KETERANGAN}
             </>
         );
     };
 
-    const priceBodyTemplate = (rowData: Demo.Product) => {
+    const hargaBodyTemplate = (rowData: Service) => {
         return (
             <>
-                <span className="p-column-title">Price</span>
-                {formatCurrency(rowData.price as number)}
+                <span className="p-column-title">Estimasi Harga</span>
+                {formatCurrency(Number(rowData.ESTIMASIHARGA))}
             </>
         );
     };
 
-    const actionBodyTemplate = (rowData: Demo.Product) => {
+    const actionBodyTemplate = (rowData: Service) => {
         return (
             <>
-                <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editProduct(rowData)} />
-                <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeleteProduct(rowData)} />
+                <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editService(rowData)} />
+                <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeleteService(rowData)} />
             </>
         );
     };
@@ -254,22 +254,22 @@ const Service = () => {
         </div>
     );
 
-    const productDialogFooter = (
+    const serviceDialogFooter = (
         <>
             <Button label="Cancel" icon="pi pi-times" text onClick={hideDialog} />
-            <Button label="Save" icon="pi pi-check" text onClick={saveProduct} />
+            <Button label="Save" icon="pi pi-check" text onClick={saveService} />
         </>
     );
-    const deleteProductDialogFooter = (
+    const deleteServiceDialogFooter = (
         <>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteProductDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteProduct} />
+            <Button label="No" icon="pi pi-times" text onClick={hideDeleteServiceDialog} />
+            <Button label="Yes" icon="pi pi-check" text onClick={deleteService} />
         </>
     );
-    const deleteProductsDialogFooter = (
+    const deleteServicesDialogFooter = (
         <>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteProductsDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteSelectedProducts} />
+            <Button label="No" icon="pi pi-times" text onClick={hideDeleteServicesDialog} />
+            <Button label="Yes" icon="pi pi-check" text onClick={deleteSelectedServices} />
         </>
     );
 
@@ -282,72 +282,72 @@ const Service = () => {
 
                     <DataTable
                         ref={dt}
-                        value={products}
-                        selection={selectedProducts}
-                        onSelectionChange={(e) => setSelectedProducts(e.value as any)}
-                        dataKey="id"
+                        value={services}
+                        selection={selectedServices}
+                        onSelectionChange={onSelectionChange}
+                        dataKey="KODE"  // Ensure this key is unique for each row
                         paginator
                         rows={10}
                         rowsPerPageOptions={[5, 10, 25]}
                         className="datatable-responsive"
                         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} services"
                         globalFilter={globalFilter}
-                        emptyMessage="No products found."
+                        emptyMessage="No services found."
                         header={header}
                         responsiveLayout="scroll"
                     >
                         <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                        <Column field="name" header="Name" body={nameBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
-                        <Column field="description" header="Description" body={descriptionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
-                        <Column field="price" header="Price" body={priceBodyTemplate} sortable></Column>
+                        <Column field="name" header="Name" body={kodeBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
+                        <Column field="description" header="Description" body={keteranganBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
+                        <Column field="price" header="Price" body={hargaBodyTemplate} sortable></Column>
                         <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                     </DataTable>
 
-                    <Dialog visible={productDialog} style={{ width: '450px' }} header="Product Details" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
+                    <Dialog visible={serviceDialog} style={{ width: '450px' }} header="Service Details" modal className="p-fluid" footer={serviceDialogFooter} onHide={hideDialog}>
 
                         <div className="field">
-                            <label htmlFor="name">Name</label>
+                            <label htmlFor="kode">Kode</label>
                             <InputText
-                                id="name"
-                                value={product.name}
-                                onChange={(e) => onInputChange(e, 'name')}
+                                id="kode"
+                                value={service.KODE}
+                                onChange={(e) => onInputChange(e, 'KODE')}
                                 required
                                 autoFocus
                                 className={classNames({
-                                    'p-invalid': submitted && !product.name
+                                    'p-invalid': submitted && !service.KODE
                                 })}
                             />
-                            {submitted && !product.name && <small className="p-invalid">Name is required.</small>}
+                            {submitted && !service.KODE && <small className="p-invalid">Name is required.</small>}
                         </div>
                         <div className="field">
-                            <label htmlFor="description">Description</label>
-                            <InputTextarea id="description" value={product.description} onChange={(e) => onInputChange(e, 'description')} required rows={3} cols={20} />
+                            <label htmlFor="keterangan">Keterangan</label>
+                            <InputTextarea id="keterangan" value={service.KETERANGAN} onChange={(e) => onInputChange(e, 'KETERANGAN')} required rows={3} cols={20} />
                         </div>
 
                         <div className="formgrid grid">
                             <div className="field col">
-                                <label htmlFor="price">Price</label>
-                                <InputNumber id="price" value={product.price} onValueChange={(e) => onInputNumberChange(e, 'price')} mode="currency" currency="IDR" locale="en-US" />
+                                <label htmlFor="harga">Estimasi Harga</label>
+                                <InputNumber id="harga" value={service.ESTIMASIHARGA} onValueChange={(e) => onInputNumberChange(e, 'ESTIMASIHARGA')} mode="currency" currency="IDR" locale="en-US" />
                             </div>
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deleteProductDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteProductDialogFooter} onHide={hideDeleteProductDialog}>
+                    <Dialog visible={deleteServiceDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteServiceDialogFooter} onHide={hideDeleteServiceDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {product && (
+                            {service && (
                                 <span>
-                                    Are you sure you want to delete <b>{product.name}</b>?
+                                    Are you sure you want to delete <b>{service.KODE}</b>?
                                 </span>
                             )}
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deleteProductsDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteProductsDialogFooter} onHide={hideDeleteProductsDialog}>
+                    <Dialog visible={deleteServicesDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteServicesDialogFooter} onHide={hideDeleteServicesDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {product && <span>Are you sure you want to delete the selected products?</span>}
+                            {service && <span>Are you sure you want to delete the selected services?</span>}
                         </div>
                     </Dialog>
                 </div>
@@ -356,4 +356,4 @@ const Service = () => {
     );
 };
 
-export default Service;
+export default ServicePage;
