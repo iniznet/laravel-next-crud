@@ -14,8 +14,13 @@ use App\Http\Controllers\Auth\AuthenticatedController;
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('barang-service', BarangServiceController::class);
     Route::apiResource('master-jasa', MasterJasaController::class);
+    Route::get('nota-service/new-identifiers', [NotaServiceController::class, 'newIdentifiers'])->name('nota-service.new-identifiers');
+    Route::post('nota-service/bulk', [NotaServiceController::class, 'bulkDestroy'])->name('nota-service.bulk-destroy');
     Route::apiResource('nota-service', NotaServiceController::class);
     Route::apiResource('sparepart-service', SparepartServiceController::class);
+
+    // bulk destroy
+    Route::post('master-jasa/bulk', [MasterJasaController::class, 'bulkDestroy'])->name('master-jasa.bulk-destroy');
 
     Route::get('/user', function (Request $request) {
         return $request->user();

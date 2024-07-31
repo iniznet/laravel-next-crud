@@ -18,4 +18,9 @@ class BarangService extends Model
     protected $fillable = [
         'KODE_SERVICE', 'KODE', 'NAMA', 'KETERANGAN', 'QTY', 'STATUSAMBIL'
     ];
+
+    public function notaService()
+    {
+        return $this->belongsTo(NotaService::class, 'KODE', 'KODE_SERVICE');
+    }
 }

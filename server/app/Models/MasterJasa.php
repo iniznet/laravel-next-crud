@@ -18,4 +18,8 @@ class MasterJasa extends Model
     protected $fillable = [
         'KODE', 'KETERANGAN', 'ESTIMASIHARGA'
     ];
+
+    protected $casts = [
+        'ESTIMASIHARGA' => 'float'
+    ];
 }

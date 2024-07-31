@@ -26,17 +26,21 @@ class NotaServiceRequest extends FormRequest
             'FAKTUR' => 'required|string|max:50',
             'KODE' => 'required|string|max:20',
             'TGL' => 'required|date',
-            'TGLBAYAR' => 'required|date',
+            'ESTIMASISELESAI' => 'required|date',
             'PEMILIK' => 'required|string|max:50',
             'NOTELEPON' => 'required|string|max:50',
-            'ESTIMASISELESAI' => 'required|date',
             'ESTIMASIHARGA' => 'required|numeric',
-            'HARGA' => 'required|numeric',
-            'NOMINALBAYAR' => 'required|numeric',
             'DP' => 'required|numeric',
             'PENERIMA' => 'required|string|max:50',
-            'DATETIME' => 'required|date',
-            'USERNAME' => 'required|string|max:50',
+            'selectedServices' => 'array',
+            'selectedServices.*.KODE' => 'string',
+            'selectedServices.*.KETERANGAN' => 'required|string',
+            'selectedServices.*.ESTIMASIHARGA' => 'required|numeric',
+            'barangList' => 'array',
+            'barangList.*.KODE' => 'string',
+            'barangList.*.NAMA' => 'required|string',
+            'barangList.*.KETERANGAN' => 'required|string',
+            'barangList.*.STATUSAMBIL' => 'required|string'
         ];
     }
 }

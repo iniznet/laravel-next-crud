@@ -15,4 +15,13 @@ class SparepartService extends Model
     protected $fillable = [
         'KODE_SERVICE', 'KODE_BARANG', 'KODE', 'HARGA', 'STATUS'
     ];
+
+    protected $casts = [
+        'HARGA' => 'float'
+    ];
+
+    public function notaService()
+    {
+        return $this->belongsTo(NotaService::class, 'KODE_SERVICE', 'KODE');
+    }
 }

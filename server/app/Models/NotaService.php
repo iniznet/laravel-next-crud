@@ -23,6 +23,20 @@ class NotaService extends Model
         'TGL' => 'date',
         'TGLBAYAR' => 'date',
         'ESTIMASISELESAI' => 'date',
+        'ESTIMASIHARGA' => 'float',
+        'HARGA' => 'float',
+        'NOMINALBAYAR' => 'float',
+        'DP' => 'float',
         'DATETIME' => 'datetime'
     ];
+
+    public function barangList()
+    {
+        return $this->hasMany(BarangService::class, 'KODE_SERVICE', 'KODE');
+    }
+
+    public function selectedServices()
+    {
+        return $this->hasMany(SparepartService::class, 'KODE_SERVICE', 'KODE');
+    }
 }
