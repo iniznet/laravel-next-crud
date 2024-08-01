@@ -5,14 +5,30 @@ export interface NotaService {
     FAKTUR: string;
     KODE: string;
     TGL: string;
+    TGLBAYAR: string;
     PEMILIK: string;
     NOTELEPON: string;
     ESTIMASISELESAI: string;
     ESTIMASIHARGA: number;
+    HARGA: number;
+    NOMINALBAYAR: number;
     DP: number;
     PENERIMA: string;
-    selectedServices?: Service[]; // Add this line
-    barangList?: BarangService[]; // Add this line
+    selectedServices?: Service[];
+    barangList?: BarangService[];
+}
+
+export interface Pembayaran {
+    FAKTUR: string;
+    KODE: string;
+    PEMILIK: string;
+    TGLBAYAR: string;
+    ESTIMASISELESAI: string;
+    DP: number;
+    NOMINALBAYAR: number;
+    ESTIMASIHARGA: number;
+    HARGA: number;
+    barangList?: BarangService[];
 }
 
 export interface BarangService {

@@ -2,7 +2,6 @@ import { NotaService } from "@/types/notaservice";
 import Api from "./Api";
 
 interface NewIdentifiers {
-    FAKTUR: string;
     KODE: string;
 }
 

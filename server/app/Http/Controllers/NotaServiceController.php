@@ -52,9 +52,6 @@ class NotaServiceController extends Controller
     {
         $data = $request->validated();
 
-        // Validate and generate unique FAKTUR
-        $data['FAKTUR'] = $this->checkFakturUnique($data['FAKTUR']);
-
         // Validate and generate unique KODE
         $data['KODE'] = $this->checkKodeUnique($data['KODE']);
 
@@ -94,7 +91,7 @@ class NotaServiceController extends Controller
         return response()->json($notaService, 201);
     }
 
-    public function show($faktur)
+    public function show(string $faktur)
     {
         $notaService = NotaService::with(['selectedServices', 'barangList'])->where('FAKTUR', $faktur)->firstOrFail();
         return response()->json($notaService);
@@ -147,10 +144,10 @@ class NotaServiceController extends Controller
     {
         $ids = request()->validate([
             'ids' => 'required|array',
-            'ids.*' => 'string|exists:notaservice,FAKTUR'
+            'ids.*' => 'string|exists:notaservice,KODE'
         ])['ids'];
 
-        NotaService::whereIn('FAKTUR', $ids)->delete();
+        NotaService::whereIn('KODE', $ids)->delete();
 
         foreach ($ids as $id) {
             SparepartService::where('KODE_SERVICE', $id)->delete();
@@ -161,39 +158,13 @@ class NotaServiceController extends Controller
     }
 
     // generate new faktur and kode
-    public function serial(Request $request)
-    {
-        $request->validate([
-            'FAKTUR' => 'required|string|max:50',
-            'KODE' => 'required|string|max:20'
-        ]);
-
-        $faktur = $this->checkFakturUnique($request->FAKTUR);
-        $kode = $this->checkKodeUnique($request->KODE);
-
-        return response()->json([
-            'FAKTUR' => $faktur,
-            'KODE' => $kode
-        ]);
-    }
-
     public function newIdentifiers()
     {
-        $faktur = $this->generateFaktur();
         $kode = $this->generateKode();
 
         return response()->json([
-            'FAKTUR' => $faktur,
             'KODE' => $kode
         ]);
-    }
-
-    private function generateFaktur(string $prefix = 'PSV'): string
-    {
-        $now = now();
-        $datePart = $now->format('ymd');
-        $sequencePart = '00000001';
-        return $this->checkFakturUnique($prefix . $datePart . $sequencePart);
     }
 
     private function generateKode(string $prefix = 'SV'): string
@@ -202,19 +173,6 @@ class NotaServiceController extends Controller
         $datePart = $now->format('ymd');
         $sequencePart = '00000001';
         return $this->checkKodeUnique($prefix . $datePart . $sequencePart);
-    }
-
-    private function checkFakturUnique(string $faktur): string
-    {
-        $originalFaktur = $faktur;
-        $counter = 1;
-
-        // PSV24073000000001 -> PSV24073000000002
-        while (NotaService::where('FAKTUR', $faktur)->exists()) {
-            $faktur = substr($originalFaktur, 0, -2) . str_pad($counter++, 2, '0', STR_PAD_LEFT);
-        }
-
-        return $faktur;
     }
 
     private function checkKodeUnique(string $kode): string
