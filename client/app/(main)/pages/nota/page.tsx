@@ -23,13 +23,16 @@ const NotaServicePage: React.FC = () => {
     const [notaServices, setNotaServices] = useState<NotaService[]>([]);
     const [nota, setNota] = useState<NotaService>({
         STATUS: 0,
-        FAKTUR: 'Loading...',
-        KODE: '',
+        FAKTUR: '',
+        KODE: 'Loading...',
         TGL: new Date().toISOString().split('T')[0],
+        TGLBAYAR: new Date().toISOString().split('T')[0],
         PEMILIK: '',
         NOTELEPON: '',
         ESTIMASISELESAI: new Date().toISOString().split('T')[0],
         ESTIMASIHARGA: 0,
+        HARGA: 0,
+        NOMINALBAYAR: 0,
         DP: 0,
         PENERIMA: '',
     });
@@ -77,16 +80,19 @@ const NotaServicePage: React.FC = () => {
 
     const openNew = async () => {
         try {
-            const { FAKTUR, KODE } = await NotaServiceAPI.getNewIdentifiers();
+            const { KODE } = await NotaServiceAPI.getNewIdentifiers();
             setNota({
                 STATUS: 0,
-                FAKTUR,
+                FAKTUR: '',
                 KODE,
                 TGL: new Date().toISOString().split('T')[0],
+                TGLBAYAR: new Date().toISOString().split('T')[0],
                 PEMILIK: '',
                 NOTELEPON: '',
                 ESTIMASISELESAI: new Date().toISOString().split('T')[0],
                 ESTIMASIHARGA: 0,
+                HARGA: 0,
+                NOMINALBAYAR: 0,
                 DP: 0,
                 PENERIMA: '',
             });
@@ -123,7 +129,7 @@ const NotaServicePage: React.FC = () => {
             if (isNewRecord) {
                 await NotaServiceAPI.create(dataToSave);
             } else {
-                await NotaServiceAPI.update(nota.FAKTUR, dataToSave);
+                await NotaServiceAPI.update(nota.KODE, dataToSave);
             }
 
             loadNotaServices();
@@ -134,21 +140,6 @@ const NotaServicePage: React.FC = () => {
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save Nota Service', life: 3000 });
         }
     };
-
-
-    // const editNotaService = async (notaService: NotaService) => {
-    //     try {
-    //         const fullNotaService = await NotaServiceAPI.getOne(notaService.FAKTUR);
-    //         setNota(fullNotaService);
-    //         setSelectedServices(fullNotaService.selectedServices || [{ KODE: '', KETERANGAN: '', ESTIMASIHARGA: 0 }]);
-    //         setBarangList(fullNotaService.barangList || [{ KODE: '1', NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian' }]);
-    //         setIsNewRecord(false);
-    //         setNotaServiceDialog(true);
-    //     } catch (error) {
-    //         console.error('Error fetching nota service details:', error);
-    //         toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch nota service details', life: 3000 });
-    //     }
-    // };
 
     const editNotaService = (notaService: NotaService) => {
         setNota({ ...notaService });
@@ -164,7 +155,7 @@ const NotaServicePage: React.FC = () => {
 
     const deleteNotaService = async () => {
         try {
-            await NotaServiceAPI.delete(nota.FAKTUR);
+            await NotaServiceAPI.delete(nota.KODE);
             loadNotaServices();
             setDeleteNotaServiceDialog(false);
             toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Nota Service Deleted', life: 3000 });
@@ -184,7 +175,7 @@ const NotaServicePage: React.FC = () => {
 
     const deleteSelectedNotaServices = async () => {
         try {
-            await NotaServiceAPI.bulkDelete(selectedNotaServices.map(ns => ns.FAKTUR));
+            await NotaServiceAPI.bulkDelete(selectedNotaServices.map(ns => ns.KODE));
             loadNotaServices();
             setDeleteNotaServicesDialog(false);
             setSelectedNotaServices([]);
@@ -309,7 +300,7 @@ const NotaServicePage: React.FC = () => {
                 value={notaServices}
                 selection={selectedNotaServices}
                 onSelectionChange={(e) => setSelectedNotaServices(e.value)}
-                dataKey="FAKTUR"
+                dataKey="KODE"
                 paginator
                 rows={10}
                 rowsPerPageOptions={[5, 10, 25]}
@@ -322,7 +313,7 @@ const NotaServicePage: React.FC = () => {
                 responsiveLayout="scroll"
             >
                 <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                <Column field="FAKTUR" header="Faktur" sortable></Column>
+                <Column field="KODE" header="Kode" sortable></Column>
                 <Column field="TGL" header="Tanggal" sortable></Column>
                 <Column field="ESTIMASISELESAI" header="Estimasi Selesai" sortable></Column>
                 <Column field="PEMILIK" header="Pemilik" sortable></Column>
@@ -337,7 +328,7 @@ const NotaServicePage: React.FC = () => {
                         <div className="p-fluid">
                             <div className="field">
                                 <label htmlFor="noServis">No. Servis</label>
-                                <InputText id="noServis" name="FAKTUR" value={nota.FAKTUR} onChange={handleInputChange} />
+                                <InputText id="noServis" name="KODE" value={nota.KODE} onChange={handleInputChange} />
                             </div>
                             <div className="field">
                                 <label htmlFor="pemilik">Pemilik</label>
@@ -396,7 +387,7 @@ const NotaServicePage: React.FC = () => {
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                     {nota && (
                         <span>
-                            Are you sure you want to delete <b>{nota.FAKTUR}</b>?
+                            Are you sure you want to delete <b>{nota.KODE}</b>?
                         </span>
                     )}
                 </div>
