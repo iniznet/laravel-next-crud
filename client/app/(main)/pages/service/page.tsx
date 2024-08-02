@@ -2,7 +2,7 @@
 'use client';
 import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
-import { DataTable } from 'primereact/datatable';
+import { DataTable, DataTableValueArray } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
 import { FileUpload } from 'primereact/fileupload';
 import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
@@ -16,6 +16,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ServiceAPI } from '@/apis/ServiceApi';
 import { formatCurrency } from '@/app/utils/currency';
 import { Service } from '@/types/service';
+import { Skeleton } from 'primereact/skeleton';
 
 const ServicePage = () => {
     let emptyService: Service = {
@@ -32,6 +33,8 @@ const ServicePage = () => {
     const [selectedServices, setSelectedServices] = useState<Service[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [dataLoaded, setDataLoaded] = useState(false);
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
 
@@ -40,12 +43,16 @@ const ServicePage = () => {
     }, []);
 
     const loadServices = async () => {
+        setLoading(true);
         try {
             const data = await ServiceAPI.getAll();
             setServices(data);
+            setDataLoaded(true);
         } catch (error) {
             console.error('Error loading services:', error);
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load services', life: 3000 });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -280,29 +287,42 @@ const ServicePage = () => {
                     <Toast ref={toast} />
                     <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-                    <DataTable
-                        ref={dt}
-                        value={services}
-                        selection={selectedServices}
-                        onSelectionChange={onSelectionChange}
-                        dataKey="KODE"  // Ensure this key is unique for each row
-                        paginator
-                        rows={10}
-                        rowsPerPageOptions={[5, 10, 25]}
-                        className="datatable-responsive"
-                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} services"
-                        globalFilter={globalFilter}
-                        emptyMessage="No services found."
-                        header={header}
-                        responsiveLayout="scroll"
-                    >
-                        <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                        <Column field="name" header="Name" body={kodeBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
-                        <Column field="description" header="Description" body={keteranganBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
-                        <Column field="price" header="Price" body={hargaBodyTemplate} sortable></Column>
-                        <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
-                    </DataTable>
+                    {loading ? (
+                        <DataTable
+                            value={Array.from({ length: 5 }) as DataTableValueArray}
+                            header={header}
+                        >
+                            <Column style={{ width: '4rem' }} body={() => <Skeleton />} />
+                            <Column style={{ width: '10rem' }} header="Kode" body={() => <Skeleton />} />
+                            <Column style={{ width: '20rem' }} header="Keterangan" body={() => <Skeleton />} />
+                            <Column style={{ width: '10rem' }} header="Estimasi Harga" body={() => <Skeleton />} />
+                            <Column style={{ width: '10rem' }} header="Actions" body={() => <Skeleton />} />
+                        </DataTable>
+                    ) : (
+                        <DataTable
+                            ref={dt}
+                            value={services}
+                            selection={selectedServices}
+                            onSelectionChange={onSelectionChange}
+                            dataKey="KODE"  // Ensure this key is unique for each row
+                            paginator
+                            rows={10}
+                            rowsPerPageOptions={[5, 10, 25]}
+                            className="datatable-responsive"
+                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} services"
+                            globalFilter={globalFilter}
+                            emptyMessage="No services found."
+                            header={header}
+                            responsiveLayout="scroll"
+                        >
+                            <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
+                            <Column field="name" header="Name" body={kodeBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
+                            <Column field="description" header="Description" body={keteranganBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
+                            <Column field="price" header="Price" body={hargaBodyTemplate} sortable></Column>
+                            <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
+                        </DataTable>
+                    )}
 
                     <Dialog visible={serviceDialog} style={{ width: '450px' }} header="Service Details" modal className="p-fluid" footer={serviceDialogFooter} onHide={hideDialog}>
 

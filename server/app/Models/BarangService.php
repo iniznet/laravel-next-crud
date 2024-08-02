@@ -23,4 +23,9 @@ class BarangService extends Model
     {
         return $this->belongsTo(NotaService::class, 'KODE', 'KODE_SERVICE');
     }
+
+    public function services()
+    {
+        return $this->hasMany(SparepartService::class, 'KODE_BARANG', 'KODE');
+    }
 }

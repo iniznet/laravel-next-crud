@@ -1,4 +1,4 @@
-import { Service } from "./service";
+import { Service, ServiceRelation } from "./service";
 
 export interface NotaService {
     STATUS: number;
@@ -15,7 +15,7 @@ export interface NotaService {
     DP: number;
     PENERIMA: string;
     selectedServices?: Service[];
-    barangList?: BarangService[];
+    barangList?: BarangWithServices[];
 }
 
 export interface Pembayaran {
@@ -36,4 +36,9 @@ export interface BarangService {
     NAMA: string;
     KETERANGAN: string;
     STATUSAMBIL: string;
+}
+
+export interface BarangWithServices extends BarangService {
+    services: ServiceRelation[];
+    ESTIMASIHARGA: number;
 }

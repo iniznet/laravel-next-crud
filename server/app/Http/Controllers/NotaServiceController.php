@@ -13,7 +13,7 @@ class NotaServiceController extends Controller
 {
     public function index()
     {
-        $notaServices = NotaService::with(['selectedServices', 'barangList'])->get();
+        $notaServices = NotaService::with(['barangList.services'])->get();
 
         // Rename the keys
         $notaServices = $notaServices->map(function ($notaService) {
@@ -34,14 +34,20 @@ class NotaServiceController extends Controller
                 'PENERIMA' => $notaService->PENERIMA,
                 'DATETIME' => $notaService->DATETIME,
                 'USERNAME' => $notaService->USERNAME,
-                'selectedServices' => $notaService->selectedServices->map(function ($service) {
+                'barangList' => $notaService->barangList->map(function ($barang) {
                     return [
-                        'KODE' => $service->KODE,
-                        'KETERANGAN' => '',
-                        'ESTIMASIHARGA' => $service->HARGA
+                        'KODE' => $barang->KODE,
+                        'NAMA' => $barang->NAMA,
+                        'KETERANGAN' => $barang->KETERANGAN,
+                        'STATUSAMBIL' => $barang->STATUSAMBIL,
+                        'services' => $barang->services->map(function ($service) {
+                            return [
+                                'KODE' => $service->KODE,
+                                'HARGA' => $service->HARGA,
+                            ];
+                        }),
                     ];
                 }),
-                'barangList' => $notaService->barangList
             ];
         });
 
@@ -53,6 +59,7 @@ class NotaServiceController extends Controller
         $data = $request->validated();
 
         // Validate and generate unique KODE
+        $data['FAKTUR'] = '';
         $data['KODE'] = $this->checkKodeUnique($data['KODE']);
 
         // Add current username
@@ -61,34 +68,34 @@ class NotaServiceController extends Controller
         // Set DATETIME
         $data['DATETIME'] = now();
 
+        // Calculate total ESTIMASIHARGA
+        $data['ESTIMASIHARGA'] = collect($data['barangList'])->sum('ESTIMASIHARGA');
+
         // Create the NotaService entry
         $notaService = NotaService::create($data);
 
-        // Process and save selected services
-        $i = 1;
-        foreach ($request->input('selectedServices', []) as $service) {
-            SparepartService::create([
-                'KODE_SERVICE' => $notaService->KODE,
-                'KODE_BARANG' => $i++,
-                'KODE' => $service['KODE'],
-                'HARGA' => $service['ESTIMASIHARGA'],
-                'STATUS' => 0
-            ]);
-        }
-
-        // Process and save barang list
-        foreach ($request->input('barangList', []) as $barang) {
-            BarangService::create([
+        // Process and save barang list with services
+        foreach ($data['barangList'] as $barang) {
+            $barangService = BarangService::create([
                 'KODE_SERVICE' => $notaService->KODE,
                 'KODE' => $barang['KODE'],
                 'NAMA' => $barang['NAMA'],
                 'KETERANGAN' => $barang['KETERANGAN'],
-                'QTY' => $barang['QTY'] ?? 1, // Default quantity if not provided
-                'STATUSAMBIL' => $barang['STATUSAMBIL']
+                'STATUSAMBIL' => $barang['STATUSAMBIL'],
+                'ESTIMASIHARGA' => $barang['ESTIMASIHARGA'],
             ]);
-        }
 
-        return response()->json($notaService, 201);
+            // Save services for each barang
+            foreach ($barang['services'] as $service) {
+                SparepartService::create([
+                    'KODE_SERVICE' => $notaService->KODE,
+                    'KODE_BARANG' => $barangService->KODE,
+                    'KODE' => $service['KODE'],
+                    'HARGA' => $service['HARGA'],
+                    'STATUS' => 0
+                ]);
+            }
+        }
     }
 
     public function show(string $faktur)
@@ -97,46 +104,54 @@ class NotaServiceController extends Controller
         return response()->json($notaService);
     }
 
-    public function update(NotaServiceRequest $request, NotaService $notaService)
+    public function update(NotaServiceRequest $request, string $kode)
     {
         $data = $request->validated();
 
+        // Calculate total ESTIMASIHARGA from barangList
+        $data['ESTIMASIHARGA'] = collect($data['barangList'])->sum('ESTIMASIHARGA');
+
+        $notaService = NotaService::where('KODE', $kode)->firstOrFail();
+
         $notaService->update($data);
 
-        // Process and save selected services
-        $notaService->selectedServices()->delete();
-        $i = 1;
-        foreach ($request->input('selectedServices', []) as $service) {
-            SparepartService::create([
-                'KODE_SERVICE' => $notaService->KODE,
-                'KODE_BARANG' => $i++,
-                'KODE' => $service['KODE'],
-                'HARGA' => $service['ESTIMASIHARGA'],
-                'STATUS' => 0
-            ]);
-        }
-
-        // Process and save barang list
+        // Process and save barang list with services
         $notaService->barangList()->delete();
-        foreach ($request->input('barangList', []) as $barang) {
-            BarangService::create([
+        $notaService->selectedServices()->delete();
+
+        foreach ($data['barangList'] as $barang) {
+            $barangService = BarangService::create([
                 'KODE_SERVICE' => $notaService->KODE,
                 'KODE' => $barang['KODE'],
                 'NAMA' => $barang['NAMA'],
                 'KETERANGAN' => $barang['KETERANGAN'],
-                'QTY' => $barang['QTY'] ?? 1, // Default quantity if not provided
-                'STATUSAMBIL' => $barang['STATUSAMBIL']
+                'STATUSAMBIL' => $barang['STATUSAMBIL'],
+                'ESTIMASIHARGA' => $barang['ESTIMASIHARGA'],
             ]);
+
+            // Save services for each barang
+            foreach ($barang['services'] as $service) {
+                SparepartService::create([
+                    'KODE_SERVICE' => $notaService->KODE,
+                    'KODE_BARANG' => $barangService->KODE,
+                    'KODE' => $service['KODE'],
+                    'HARGA' => $service['HARGA'],
+                    'STATUS' => 0
+                ]);
+            }
         }
 
         return response()->json($notaService);
     }
 
-    public function destroy(NotaService $notaService)
+    public function destroy(string $kode)
     {
+        $notaService = NotaService::where('KODE', $kode)->firstOrFail();
+
         $notaService->selectedServices()->delete();
         $notaService->barangList()->delete();
         $notaService->delete();
+
         return response()->json(null, 204);
     }
 

@@ -5,6 +5,7 @@ export interface Service {
 }
 
 export interface ServiceRelation {
+    KODE_SERVICE: string;
     KODE_BARANG: string;
     KODE: string;
     HARGA: number;
