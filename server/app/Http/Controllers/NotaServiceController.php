@@ -81,8 +81,8 @@ class NotaServiceController extends Controller
                 'KODE' => $barang['KODE'],
                 'NAMA' => $barang['NAMA'],
                 'KETERANGAN' => $barang['KETERANGAN'],
+                'QTY' => 1,
                 'STATUSAMBIL' => $barang['STATUSAMBIL'],
-                'ESTIMASIHARGA' => $barang['ESTIMASIHARGA'],
             ]);
 
             // Save services for each barang
@@ -92,7 +92,7 @@ class NotaServiceController extends Controller
                     'KODE_BARANG' => $barangService->KODE,
                     'KODE' => $service['KODE'],
                     'HARGA' => $service['HARGA'],
-                    'STATUS' => 0
+                    'STATUS' => 'J'
                 ]);
             }
         }
@@ -125,8 +125,8 @@ class NotaServiceController extends Controller
                 'KODE' => $barang['KODE'],
                 'NAMA' => $barang['NAMA'],
                 'KETERANGAN' => $barang['KETERANGAN'],
+                'QTY' => 1,
                 'STATUSAMBIL' => $barang['STATUSAMBIL'],
-                'ESTIMASIHARGA' => $barang['ESTIMASIHARGA'],
             ]);
 
             // Save services for each barang
@@ -136,7 +136,7 @@ class NotaServiceController extends Controller
                     'KODE_BARANG' => $barangService->KODE,
                     'KODE' => $service['KODE'],
                     'HARGA' => $service['HARGA'],
-                    'STATUS' => 0
+                    'STATUS' => 'J'
                 ]);
             }
         }
