@@ -96,7 +96,7 @@ const LoginRegister: React.FC = () => {
                             {isRegisterActive ? (
                                 <p>Already have an account? <a href="#" onClick={toggleForm} className="font-medium text-blue-500">Sign In</a></p>
                             ) : (
-                                <p>Don't have an account? <a href="#" onClick={toggleForm} className="font-medium text-blue-500">Register</a></p>
+                                <p>Don&apos;t have an account? <a href="#" onClick={toggleForm} className="font-medium text-blue-500">Register</a></p>
                             )}
                         </div>
                     </div>

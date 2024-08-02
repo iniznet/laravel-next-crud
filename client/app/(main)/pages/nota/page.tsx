@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
-import { DataTable } from 'primereact/datatable';
+import { DataTable, DataTableValueArray } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
 import { TabView, TabPanel } from 'primereact/tabview';
@@ -14,10 +14,13 @@ import { Toolbar } from 'primereact/toolbar';
 import Api from '@/apis/Api';
 import { ServiceAPI } from '@/apis/ServiceApi';
 import { formatCurrency } from '@/app/utils/currency';
-import { BarangService, NotaService } from '@/types/notaservice';
+import { BarangService, BarangWithServices, NotaService } from '@/types/notaservice';
 import { Service } from '@/types/service';
 import { NotaServiceAPI } from '@/apis/NotaServiceApi';
 import React from 'react';
+import { Skeleton } from 'primereact/skeleton';
+import PilihJasaBarang from '@/app/components/PilihJasaBarang';
+import { InputNumber } from 'primereact/inputnumber';
 
 const NotaServicePage: React.FC = () => {
     const [notaServices, setNotaServices] = useState<NotaService[]>([]);
@@ -37,13 +40,16 @@ const NotaServicePage: React.FC = () => {
         PENERIMA: '',
     });
     const [services, setServices] = useState<Service[]>([]);
-    const [selectedServices, setSelectedServices] = useState<Service[]>([{ KODE: '', KETERANGAN: '', ESTIMASIHARGA: 0 }]);
-    const [barangList, setBarangList] = useState<BarangService[]>([{ KODE: '1', NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian' }]);
+    const [barangList, setBarangList] = useState<BarangWithServices[]>([
+        { KODE: '1', NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian', services: [], ESTIMASIHARGA: 0 }
+    ]);
     const [notaServiceDialog, setNotaServiceDialog] = useState(false);
     const [deleteNotaServiceDialog, setDeleteNotaServiceDialog] = useState(false);
     const [deleteNotaServicesDialog, setDeleteNotaServicesDialog] = useState(false);
     const [selectedNotaServices, setSelectedNotaServices] = useState<NotaService[]>([]);
     const [globalFilter, setGlobalFilter] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [dataLoaded, setDataLoaded] = useState(false);
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
     const [isNewRecord, setIsNewRecord] = useState(true);
@@ -64,16 +70,21 @@ const NotaServicePage: React.FC = () => {
     };
 
     const loadNotaServices = async () => {
+        setLoading(true);
+
         try {
             const data = await NotaServiceAPI.getAll();
             setNotaServices(data);
+            setDataLoaded(true);
         } catch (error) {
             console.error('Error loading nota services:', error);
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load nota services', life: 3000 });
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: { target: { name: string; value: string | number } }) => {
         const { name, value } = e.target;
         setNota(prev => ({ ...prev, [name]: value }));
     };
@@ -96,8 +107,11 @@ const NotaServicePage: React.FC = () => {
                 DP: 0,
                 PENERIMA: '',
             });
-            setSelectedServices([{ KODE: '', KETERANGAN: '', ESTIMASIHARGA: 0 }]);
-            setBarangList([{ KODE: '1', NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian' }]);
+            setBarangList([{
+                KODE: '1', NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian',
+                services: [],
+                ESTIMASIHARGA: 0,
+            }]);
             setIsNewRecord(true);
             setNotaServiceDialog(true);
         } catch (error) {
@@ -122,7 +136,6 @@ const NotaServicePage: React.FC = () => {
         try {
             const dataToSave = {
                 ...nota,
-                selectedServices,
                 barangList
             };
 
@@ -143,9 +156,15 @@ const NotaServicePage: React.FC = () => {
 
     const editNotaService = (notaService: NotaService) => {
         setNota({ ...notaService });
-        setSelectedServices(notaService.selectedServices || [{ KODE: '', KETERANGAN: '', ESTIMASIHARGA: 0 }]);
-        setBarangList(notaService.barangList || [{ KODE: '1', NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian' }]);
+
+        // calculate estimated price for each barang
+        const updatedBarangList = notaService.barangList?.map(barang => {
+            const newEstimatedPrice = barang.services.reduce((sum, service) => sum + service.HARGA, 0);
+            return { ...barang, ESTIMASIHARGA: newEstimatedPrice };
+        });
+        setBarangList(updatedBarangList || []);
         setNotaServiceDialog(true);
+        setIsNewRecord(false);
     };
 
     const confirmDeleteNotaService = (notaService: NotaService) => {
@@ -186,73 +205,17 @@ const NotaServicePage: React.FC = () => {
         }
     };
 
-    const updateSelectedService = (index: number, service: Service) => {
-        setSelectedServices(prev => {
-            const updatedServices = prev.map((item, i) =>
-                i === index
-                    ? { KODE: service.KODE, KETERANGAN: service.KETERANGAN, ESTIMASIHARGA: service.ESTIMASIHARGA }
-                    : item
-            );
-            updateEstimatedPrice(updatedServices);
-            return updatedServices;
-        });
-    };
-
-    const updateEstimatedPrice = (updatedServices: Service[] = selectedServices) => {
-        const total = updatedServices.reduce((sum, service) => sum + service.ESTIMASIHARGA, 0);
+    const updateTotalEstimasi = useCallback(() => {
+        const total = barangList.reduce((sum, barang) => {
+            const barangTotal = barang.services.reduce((serviceSum, service) => serviceSum + service.HARGA, 0);
+            return sum + barangTotal;
+        }, 0);
         setNota(prev => ({ ...prev, ESTIMASIHARGA: total }));
-    };
+    }, [barangList]);
 
-    const addRow = (setter: React.Dispatch<React.SetStateAction<any[]>>, initialValue: any) => {
-        setter(prev => [...prev, initialValue]);
-    };
-
-    const removeRow = (setter: React.Dispatch<React.SetStateAction<any[]>>, index: number) => {
-        setter(prev => {
-            const newList = prev.length > 1 ? prev.filter((_, i) => i !== index) : prev;
-            updateEstimatedPrice(newList);
-            return newList;
-        });
-    };
-
-    const updateBarang = (index: number, field: keyof BarangService, value: string) => {
-        setBarangList(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
-    };
-
-    const serviceTemplate = (rowData: Service, column: any) => (
-        <Dropdown
-            value={services.find(s => s.KODE === rowData.KODE)}
-            options={services}
-            onChange={(e) => updateSelectedService(column.rowIndex, e.value)}
-            optionLabel="KETERANGAN"
-            placeholder="Select a service"
-        />
-    );
-
-    const barangTemplate = (rowData: BarangService, column: any, field: keyof BarangService) => (
-        <InputText
-            value={rowData[field]}
-            onChange={(e) => updateBarang(column.rowIndex, field, e.target.value)}
-        />
-    );
-
-    const statusTemplate = (rowData: BarangService, column: any) => (
-        <Dropdown
-            value={rowData.STATUSAMBIL}
-            options={['Antrian', 'Proses', 'Selesai']}
-            onChange={(e) => updateBarang(column.rowIndex, 'STATUSAMBIL', e.value)}
-            placeholder="Select Status"
-        />
-    );
-
-    const actionTemplate = (setter: React.Dispatch<React.SetStateAction<any[]>>, initialValue: any) => (rowData: any, column: any) => (
-        <>
-            <div className="flex gap-2">
-                <Button icon="pi pi-plus" className="p-button p-component p-button-icon-only p-button-rounded p-button-success" onClick={() => addRow(setter, initialValue)} />
-                <Button icon="pi pi-minus" className="p-button p-component p-button-icon-only p-button-rounded p-button-danger" onClick={() => removeRow(setter, column.rowIndex)} disabled={column.rowIndex === 0 && (setter === setSelectedServices ? selectedServices.length === 1 : barangList.length === 1)} />
-            </div>
-        </>
-    );
+    useEffect(() => {
+        updateTotalEstimasi();
+    }, [barangList, updateTotalEstimasi]);
 
     const leftToolbarTemplate = () => {
         return (
@@ -295,32 +258,53 @@ const NotaServicePage: React.FC = () => {
             <Toast ref={toast} />
             <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-            <DataTable
-                ref={dt}
-                value={notaServices}
-                selection={selectedNotaServices}
-                onSelectionChange={(e) => setSelectedNotaServices(e.value)}
-                dataKey="KODE"
-                paginator
-                rows={10}
-                rowsPerPageOptions={[5, 10, 25]}
-                className="datatable-responsive"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} nota services"
-                globalFilter={globalFilter}
-                emptyMessage="No nota services found."
-                header={header}
-                responsiveLayout="scroll"
-            >
-                <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                <Column field="KODE" header="Kode" sortable></Column>
-                <Column field="TGL" header="Tanggal" sortable></Column>
-                <Column field="ESTIMASISELESAI" header="Estimasi Selesai" sortable></Column>
-                <Column field="PEMILIK" header="Pemilik" sortable></Column>
-                <Column field="NOTELEPON" header="No Telepon" sortable></Column>
-                <Column field="ESTIMASIHARGA" header="Estimasi Harga" sortable body={(rowData) => formatCurrency(rowData.ESTIMASIHARGA)}></Column>
-                <Column body={actionBodyTemplate}></Column>
-            </DataTable>
+            {loading
+                ?
+                (
+                    <DataTable
+                        value={Array.from({ length: 5 }) as DataTableValueArray}
+                        header={header}
+                    >
+                        <Column style={{ width: '4rem' }} body={() => <Skeleton />} />
+                        <Column style={{ width: '10rem' }} header="No. Servis" body={() => <Skeleton />} />
+                        <Column style={{ width: '10rem' }} header="Tanggal" body={() => <Skeleton />} />
+                        <Column style={{ width: '10rem' }} header="Estimasi Selesai" body={() => <Skeleton />} />
+                        <Column style={{ width: '10rem' }} header="Pemilik" body={() => <Skeleton />} />
+                        <Column style={{ width: '10rem' }} header="No Telepon" body={() => <Skeleton />} />
+                        <Column style={{ width: '10rem' }} header="Estimasi Harga" body={() => <Skeleton />} />
+                        <Column style={{ width: '10rem' }} body={() => <Skeleton />} />
+                    </DataTable>
+                )
+                :
+                (
+
+                    <DataTable
+                        ref={dt}
+                        value={notaServices}
+                        selection={selectedNotaServices}
+                        onSelectionChange={(e) => setSelectedNotaServices(e.value)}
+                        dataKey="KODE"
+                        paginator
+                        rows={10}
+                        rowsPerPageOptions={[5, 10, 25]}
+                        className="datatable-responsive"
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} nota services"
+                        globalFilter={globalFilter}
+                        emptyMessage="No nota services found."
+                        header={header}
+                        responsiveLayout="scroll"
+                    >
+                        <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
+                        <Column field="KODE" header="No. Servis" sortable></Column>
+                        <Column field="TGL" header="Tanggal" sortable body={(rowData) => <span>{new Date(rowData.TGL).toLocaleDateString()}</span>}></Column>
+                        <Column field="ESTIMASISELESAI" header="Estimasi Selesai" sortable body={(rowData) => <span>{new Date(rowData.ESTIMASISELESAI).toLocaleDateString()}</span>}></Column>
+                        <Column field="PEMILIK" header="Pemilik" sortable></Column>
+                        <Column field="NOTELEPON" header="No Telepon" sortable></Column>
+                        <Column field="ESTIMASIHARGA" header="Estimasi Harga" sortable body={(rowData) => formatCurrency(rowData.ESTIMASIHARGA)}></Column>
+                        <Column body={actionBodyTemplate}></Column>
+                    </DataTable>
+                )}
 
             <Dialog visible={notaServiceDialog} style={{ width: '70%' }} header="Nota Service Details" modal className="p-fluid" footer={<div className="flex justify-content-end"><Button label="Cancel" icon="pi pi-times" text onClick={hideDialog} /><Button label="Save" icon="pi pi-check" text onClick={saveNotaService} /></div>} onHide={hideDialog}>
                 <TabView>
@@ -345,19 +329,11 @@ const NotaServicePage: React.FC = () => {
                         </div>
                     </TabPanel>
                     <TabPanel header="Pilih Jasa dan Barang">
-                        <DataTable value={selectedServices} header="Pilih Jasa" className="mb-3">
-                            <Column field="KODE" header="No" style={{ width: '10%' }}></Column>
-                            <Column body={serviceTemplate} header="Jasa"></Column>
-                            <Column field="ESTIMASIHARGA" header="Harga" body={(rowData) => formatCurrency(rowData.ESTIMASIHARGA)}></Column>
-                            <Column body={actionTemplate(setSelectedServices, { KODE: '', KETERANGAN: '', ESTIMASIHARGA: 0 })} style={{ width: '10%' }}></Column>
-                        </DataTable>
-                        <DataTable value={barangList} header="List Barang">
-                            <Column field="KODE" header="No" style={{ width: '10%' }}></Column>
-                            <Column body={(rowData, column) => barangTemplate(rowData, column, 'NAMA')} header="Nama Barang"></Column>
-                            <Column body={(rowData, column) => barangTemplate(rowData, column, 'KETERANGAN')} header="Keterangan"></Column>
-                            <Column body={statusTemplate} header="Status"></Column>
-                            <Column body={actionTemplate(setBarangList, { KODE: (barangList.length + 1).toString(), NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian' })} style={{ width: '10%' }}></Column>
-                        </DataTable>
+                        <PilihJasaBarang
+                            barangList={barangList}
+                            setBarangList={setBarangList}
+                            services={services}
+                        />
                     </TabPanel>
                     <TabPanel header="Ringkasan">
                         <div className="p-fluid">
@@ -371,7 +347,7 @@ const NotaServicePage: React.FC = () => {
                             </div>
                             <div className="field">
                                 <label htmlFor="dp">DP</label>
-                                <InputText id="dp" name="DP" value={nota.DP.toString()} onChange={handleInputChange} />
+                                <InputNumber id="dp" name="DP" value={nota.DP} onValueChange={(e) => handleInputChange({ target: { name: 'DP', value: e.value || 0 } })} mode="currency" currency="IDR" locale="id-ID" />
                             </div>
                             <div className="field">
                                 <label htmlFor="penerima">Penerima</label>

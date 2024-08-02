@@ -6,24 +6,15 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class NotaServiceRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
             'STATUS' => 'required|integer',
-            'FAKTUR' => 'required|string|max:50',
             'KODE' => 'required|string|max:20',
             'TGL' => 'required|date',
             'ESTIMASISELESAI' => 'required|date',
@@ -32,15 +23,15 @@ class NotaServiceRequest extends FormRequest
             'ESTIMASIHARGA' => 'required|numeric',
             'DP' => 'required|numeric',
             'PENERIMA' => 'required|string|max:50',
-            'selectedServices' => 'array',
-            'selectedServices.*.KODE' => 'string',
-            'selectedServices.*.KETERANGAN' => 'required|string',
-            'selectedServices.*.ESTIMASIHARGA' => 'required|numeric',
-            'barangList' => 'array',
-            'barangList.*.KODE' => 'string',
+            'barangList' => 'required|array',
+            'barangList.*.KODE' => 'required|string',
             'barangList.*.NAMA' => 'required|string',
             'barangList.*.KETERANGAN' => 'required|string',
-            'barangList.*.STATUSAMBIL' => 'required|string'
+            'barangList.*.STATUSAMBIL' => 'required|string',
+            'barangList.*.ESTIMASIHARGA' => 'required|numeric',
+            'barangList.*.services' => 'required|array',
+            'barangList.*.services.*.KODE' => 'required|string',
+            'barangList.*.services.*.HARGA' => 'required|numeric',
         ];
     }
 }

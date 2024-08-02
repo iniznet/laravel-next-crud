@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { DataTable } from 'primereact/datatable';
+import { DataTable, DataTableValue, DataTableValueArray } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
@@ -16,6 +16,7 @@ import { NotaServiceAPI } from '@/apis/NotaServiceApi';
 import { Pembayaran, NotaService, BarangService } from '@/types/notaservice';
 import { formatCurrency } from '@/app/utils/currency';
 import { classNames } from 'primereact/utils';
+import { Skeleton } from 'primereact/skeleton';
 
 const PembayaranPage: React.FC = () => {
     const [pembayarans, setPembayarans] = useState<Pembayaran[]>([]);
@@ -39,12 +40,31 @@ const PembayaranPage: React.FC = () => {
     const [notaServiceOptions, setNotaServiceOptions] = useState<Pembayaran[]>([]);
     const [selectedNotaService, setSelectedNotaService] = useState<Pembayaran | null>(null);
     const [barangList, setBarangList] = useState<BarangService[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [dataLoaded, setDataLoaded] = useState(false);
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
 
     useEffect(() => {
-        loadPembayarans();
-        loadNotaServiceOptions();
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [pembayaranData, notaServiceData] = await Promise.all([
+                    PembayaranAPI.getAll(),
+                    PembayaranAPI.getServices()
+                ]);
+                setPembayarans(pembayaranData);
+                setNotaServiceOptions(notaServiceData);
+                setDataLoaded(true);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load data', life: 3000 });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
 
     const loadPembayarans = async () => {
@@ -242,7 +262,7 @@ const PembayaranPage: React.FC = () => {
     const rightToolbarTemplate = () => {
         return (
             <React.Fragment>
-                <Button label="Export" icon="pi pi-upload" severity="help" onClick={exportCSV} />
+                <Button label="Export" icon="pi pi-u</DataTable>pload" severity="help" onClick={exportCSV} />
             </React.Fragment>
         );
     };
@@ -293,33 +313,54 @@ const PembayaranPage: React.FC = () => {
                 <div className="card">
                     <Toast ref={toast} />
                     <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
-
-                    <DataTable
-                        ref={dt}
-                        value={pembayarans}
-                        selection={selectedPembayarans}
-                        onSelectionChange={(e) => setSelectedPembayarans(e.value)}
-                        dataKey="FAKTUR"
-                        paginator
-                        rows={10}
-                        rowsPerPageOptions={[5, 10, 25]}
-                        className="datatable-responsive"
-                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pembayarans"
-                        globalFilter={globalFilter}
-                        emptyMessage="No pembayarans found."
-                        header={header}
-                        responsiveLayout="scroll"
-                    >
-                        <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                        <Column field="FAKTUR" header="Faktur" sortable body={(rowData) => <span>{rowData.FAKTUR}</span>}></Column>
-                        <Column field="KODE" header="No Servis" sortable body={(rowData) => <span>{rowData.KODE}</span>}></Column>
-                        <Column field="PEMILIK" header="Pemilik" sortable body={(rowData) => <span>{rowData.PEMILIK}</span>}></Column>
-                        <Column field="TGLBAYAR" header="Tanggal Bayar" sortable body={(rowData) => <span>{new Date(rowData.TGLBAYAR).toLocaleDateString()}</span>}></Column>
-                        <Column field="HARGA" header="Total Harga" sortable body={(rowData) => <span>{formatCurrency(rowData.HARGA)}</span>}></Column>
-                        <Column header="Status" body={(rowData) => <span>{rowData.NOMINALBAYAR === rowData.HARGA ? 'Lunas' : 'Belum Lunas'}</span>}></Column>
-                        <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
-                    </DataTable>
+                    {
+                        loading
+                            ?
+                            (
+                                <DataTable
+                                    value={Array.from({ length: 5 }) as DataTableValueArray}
+                                    header={header}
+                                >
+                                    <Column style={{ width: '4rem' }} body={() => <Skeleton />} />
+                                    <Column style={{ width: '10rem' }} header="Faktur" body={() => <Skeleton />} />
+                                    <Column style={{ width: '10rem' }} header="No Servis" body={() => <Skeleton />} />
+                                    <Column style={{ width: '10rem' }} header="Pemilik" body={() => <Skeleton />} />
+                                    <Column style={{ width: '10rem' }} header="Tanggal Bayar" body={() => <Skeleton />} />
+                                    <Column style={{ width: '10rem' }} header="Total Harga" body={() => <Skeleton />} />
+                                    <Column style={{ width: '10rem' }} header="Status" body={() => <Skeleton />} />
+                                    <Column style={{ width: '10rem' }} header="Actions" body={() => <Skeleton />} />
+                                </DataTable>
+                            )
+                            :
+                            (
+                                <DataTable
+                                    ref={dt}
+                                    value={pembayarans}
+                                    selection={selectedPembayarans}
+                                    onSelectionChange={(e) => setSelectedPembayarans(e.value)}
+                                    dataKey="FAKTUR"
+                                    paginator
+                                    rows={10}
+                                    rowsPerPageOptions={[5, 10, 25]}
+                                    className="datatable-responsive"
+                                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pembayarans"
+                                    globalFilter={globalFilter}
+                                    emptyMessage="No pembayarans found."
+                                    header={header}
+                                    responsiveLayout="scroll"
+                                >
+                                    <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
+                                    <Column field="FAKTUR" header="Faktur" sortable body={(rowData) => <span>{rowData.FAKTUR}</span>}></Column>
+                                    <Column field="KODE" header="No Servis" sortable body={(rowData) => <span>{rowData.KODE}</span>}></Column>
+                                    <Column field="PEMILIK" header="Pemilik" sortable body={(rowData) => <span>{rowData.PEMILIK}</span>}></Column>
+                                    <Column field="TGLBAYAR" header="Tanggal Bayar" sortable body={(rowData) => <span>{new Date(rowData.TGLBAYAR).toLocaleDateString()}</span>}></Column>
+                                    <Column field="HARGA" header="Total Harga" sortable body={(rowData) => <span>{formatCurrency(rowData.HARGA)}</span>}></Column>
+                                    <Column header="Status" body={(rowData) => <span>{rowData.NOMINALBAYAR === rowData.HARGA ? 'Lunas' : 'Belum Lunas'}</span>}></Column>
+                                    <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
+                                </DataTable>
+                            )
+                    }
 
                     <Dialog visible={pembayaranDialog} style={{ maxWidth: '800px' }} header="Pembayaran Details" modal className="p-fluid" footer={pembayaranDialogFooter} onHide={hideDialog}>
                         <div className="flex flex-wrap gap-4">
