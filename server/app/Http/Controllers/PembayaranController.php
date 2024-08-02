@@ -63,11 +63,11 @@ class PembayaranController extends Controller
         $barangList = $pembayaran->barangList;
 
         $barangList = $barangList->map(function ($barang) use ($pembayaran) {
-            $selectedService = $pembayaran->selectedServices->firstWhere('KODE_BARANG', $barang->KODE);
-            $barang->HARGA = $selectedService->HARGA;
+            $selectedServices = $pembayaran->selectedServices->where('KODE_BARANG', $barang->KODE);
+            $barang->HARGA = $selectedServices->sum('HARGA');
             return $barang;
         });
-        
+
         // rename the keys
         $pembayaran = [
             'ID' => $pembayaran->ID,
@@ -155,7 +155,7 @@ class PembayaranController extends Controller
     public function bulkDelete(Request $request)
     {
         $fakturs = $request->input('fakturs', []);
-        
+
         DB::beginTransaction();
         try {
             NotaService::whereIn('FAKTUR', $fakturs)->delete();
