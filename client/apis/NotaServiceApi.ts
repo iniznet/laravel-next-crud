@@ -21,13 +21,13 @@ export const NotaServiceAPI = {
     create: async (data: Omit<NotaService, 'ID'>): Promise<NotaService> => {
         const response = await Api.post<NotaService>('/nota-service', data);
         if (response.success) return response.data!;
-        throw new Error(response.message);
+        throw { message: response.message, errors: response.errors };
     },
 
     update: async (id: string, data: Partial<NotaService>): Promise<NotaService> => {
         const response = await Api.put<NotaService>(`/nota-service/${id}`, data);
         if (response.success) return response.data!;
-        throw new Error(response.message);
+        throw { message: response.message, errors: response.errors };
     },
 
     delete: async (id: string): Promise<void> => {

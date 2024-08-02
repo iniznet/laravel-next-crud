@@ -5,3 +5,7 @@ export interface Message {
         [key: string]: string;
     };
 }
+
+export interface FieldErrors {
+    [key: string]: string[];
+}

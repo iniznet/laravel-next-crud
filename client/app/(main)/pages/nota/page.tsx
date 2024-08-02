@@ -21,6 +21,7 @@ import React from 'react';
 import { Skeleton } from 'primereact/skeleton';
 import PilihJasaBarang from '@/app/components/PilihJasaBarang';
 import { InputNumber } from 'primereact/inputnumber';
+import { FieldErrors } from '@/types/message';
 
 const NotaServicePage: React.FC = () => {
     const [notaServices, setNotaServices] = useState<NotaService[]>([]);
@@ -53,6 +54,7 @@ const NotaServicePage: React.FC = () => {
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
     const [isNewRecord, setIsNewRecord] = useState(true);
+    const [errors, setErrors] = useState<FieldErrors>({});
 
     useEffect(() => {
         fetchServices();
@@ -132,8 +134,13 @@ const NotaServicePage: React.FC = () => {
         setDeleteNotaServicesDialog(false);
     };
 
+    const getErrorMessage = (field: string): string => {
+        return errors[field] ? errors[field][0] : '';
+    };
+
     const saveNotaService = async () => {
         try {
+            setErrors({});
             const dataToSave = {
                 ...nota,
                 barangList
@@ -148,9 +155,14 @@ const NotaServicePage: React.FC = () => {
             loadNotaServices();
             setNotaServiceDialog(false);
             toast.current?.show({ severity: 'success', summary: 'Success', detail: `Nota Service ${isNewRecord ? 'Created' : 'Updated'} successfully`, life: 3000 });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving Nota Service:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save Nota Service', life: 3000 });
+            if (error.errors) {
+                setErrors(error.errors);
+                toast.current?.show({ severity: 'error', summary: 'Validation Error', detail: error.message, life: 3000 });
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: error.message || 'Failed to save Nota Service', life: 3000 });
+            }
         }
     };
 
@@ -312,15 +324,18 @@ const NotaServicePage: React.FC = () => {
                         <div className="p-fluid">
                             <div className="field">
                                 <label htmlFor="noServis">No. Servis</label>
-                                <InputText id="noServis" name="KODE" value={nota.KODE} onChange={handleInputChange} />
+                                <InputText id="noServis" name="KODE" value={nota.KODE} onChange={handleInputChange} className={errors.KODE ? 'p-invalid' : ''} />
+                                {getErrorMessage('KODE') && <small className="p-error">{getErrorMessage('KODE')}</small>}
                             </div>
                             <div className="field">
                                 <label htmlFor="pemilik">Pemilik</label>
-                                <InputText id="pemilik" name="PEMILIK" value={nota.PEMILIK} onChange={handleInputChange} />
+                                <InputText id="pemilik" name="PEMILIK" value={nota.PEMILIK} onChange={handleInputChange} className={errors.PEMILIK ? 'p-invalid' : ''} />
+                                {getErrorMessage('PEMILIK') && <small className="p-error">{getErrorMessage('PEMILIK')}</small>}
                             </div>
                             <div className="field">
                                 <label htmlFor="noTelp">No. Telp</label>
-                                <InputText id="noTelp" name="NOTELEPON" value={nota.NOTELEPON} onChange={handleInputChange} />
+                                <InputText id="noTelp" name="NOTELEPON" value={nota.NOTELEPON} onChange={handleInputChange} className={errors.NOTELEPON ? 'p-invalid' : ''} />
+                                {getErrorMessage('NOTELEPON') && <small className="p-error">{getErrorMessage('NOTELEPON')}</small>}
                             </div>
                             <div className="field">
                                 <label htmlFor="tanggal">Tanggal</label>
@@ -333,6 +348,7 @@ const NotaServicePage: React.FC = () => {
                             barangList={barangList}
                             setBarangList={setBarangList}
                             services={services}
+                            errors={errors}
                         />
                     </TabPanel>
                     <TabPanel header="Ringkasan">

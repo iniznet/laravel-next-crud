@@ -17,6 +17,7 @@ import { ServiceAPI } from '@/apis/ServiceApi';
 import { formatCurrency } from '@/app/utils/currency';
 import { Service } from '@/types/service';
 import { Skeleton } from 'primereact/skeleton';
+import { FieldErrors } from '@/types/message';
 
 const ServicePage = () => {
     let emptyService: Service = {
@@ -37,6 +38,11 @@ const ServicePage = () => {
     const [dataLoaded, setDataLoaded] = useState(false);
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
+    const [errors, setErrors] = useState<FieldErrors>({});
+
+    const getErrorMessage = (field: string): string => {
+        return errors[field] ? errors[field][0] : '';
+    };
 
     useEffect(() => {
         loadServices();
@@ -79,20 +85,16 @@ const ServicePage = () => {
         setSubmitted(true);
 
         if (service.KODE.trim()) {
+            let response;
             try {
-                let response;
-                try {
-                    const existingService = await ServiceAPI.getOne(service.KODE);
-                    if (existingService && existingService.KODE) {
-                        // If a service with the same KODE exists, update it
-                        response = await ServiceAPI.update(service.KODE, service);
-                    } else {
-                        // Otherwise, create a new service
-                        response = await ServiceAPI.create(service);
-                    }
-                } catch (error) {
-                    console.error('Error saving service:', error);
-                    toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save service', life: 3000 });
+                const existingService = await ServiceAPI.getOne(service.KODE);
+
+                if (existingService && existingService.KODE) {
+                    // If a service with the same KODE exists, update it
+                    response = await ServiceAPI.update(service.KODE, service);
+                } else {
+                    // Otherwise, create a new service
+                    response = await ServiceAPI.create(service);
                 }
 
                 loadServices();
@@ -338,7 +340,7 @@ const ServicePage = () => {
                                     'p-invalid': submitted && !service.KODE
                                 })}
                             />
-                            {submitted && !service.KODE && <small className="p-invalid">Name is required.</small>}
+                            {submitted && !service.KODE && <small className="p-error">Kode is required.</small>}
                         </div>
                         <div className="field">
                             <label htmlFor="keterangan">Keterangan</label>
