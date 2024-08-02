@@ -104,9 +104,9 @@ class PembayaranController extends Controller
         return response()->json($pembayaran);
     }
 
-    public function destroy($id)
+    public function destroy(string $faktur)
     {
-        $pembayaran = NotaService::findOrFail($id);
+        $pembayaran = NotaService::where('FAKTUR', $faktur)->firstOrFail();
         $pembayaran->delete();
         return response()->json(null, 204);
     }
