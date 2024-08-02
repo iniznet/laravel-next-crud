@@ -14,10 +14,15 @@ const PilihJasaBarang: React.FC<{
     barangList: BarangWithServices[];
     setBarangList: React.Dispatch<React.SetStateAction<BarangWithServices[]>>;
     services: Service[];
-}> = ({ barangList, setBarangList, services }) => {
+    errors: Record<string, string[]>;
+}> = ({ barangList, setBarangList, services, errors }) => {
     const [selectedBarang, setSelectedBarang] = useState<BarangWithServices | null>(null);
     const [filteredServices, setFilteredServices] = useState<Service[]>(services);
     const [serviceFilter, setServiceFilter] = useState('');
+
+    const getErrorMessage = (field: string): string => {
+        return errors[field] ? errors[field][0] : '';
+    };
 
     useEffect(() => {
         setFilteredServices(
@@ -101,12 +106,18 @@ const PilihJasaBarang: React.FC<{
         }
     };
 
-    const barangTemplate = (rowData: BarangWithServices, column: any, field: keyof BarangService) => (
-        <InputText
-            value={rowData[field]}
-            onChange={(e) => updateBarang(barangList.indexOf(rowData), field, e.target.value)}
-        />
-    );
+    const barangTemplate = (rowData: BarangWithServices, column: any, field: keyof BarangService) => {
+        return (
+            <>
+                <InputText
+                    value={rowData[field]}
+                    onChange={(e) => updateBarang(barangList.indexOf(rowData), field, e.target.value)}
+                    className={getErrorMessage(`barangList.${barangList.indexOf(rowData)}.${field}`) ? 'p-invalid' : ''}
+                />
+                {getErrorMessage(`barangList.${barangList.indexOf(rowData)}.${field}`) && <small className="p-error">{getErrorMessage(`barangList.${barangList.indexOf(rowData)}.${field}`)}</small>}
+            </>
+        );
+    };
 
     const statusTemplate = (rowData: BarangWithServices) => (
         <Dropdown

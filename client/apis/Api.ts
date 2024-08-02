@@ -29,22 +29,25 @@ class Api {
     }
 
     private handleResponse<T>(response: AxiosResponse): ApiResponse<T> {
+        let results;
         const { status, data } = response;
         if (status >= 200 && status < 300) {
-            return {
+            results = {
                 success: true,
                 statusCode: status,
                 message: 'Request was successful',
                 data: data,
             };
         } else {
-            return {
+            results = {
                 success: false,
                 statusCode: status,
                 message: data?.message || 'Request failed',
                 errors: data?.errors || null,
             };
         }
+
+        return results;
     }
 
     private handleError(error: any): ApiResponse<null> {

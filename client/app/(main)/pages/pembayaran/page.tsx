@@ -378,8 +378,9 @@ const PembayaranPage: React.FC = () => {
                                     optionLabel="KODE"
                                     placeholder="Select a Kode"
                                     className={classNames({ 'p-invalid': submitted && !pembayaran.KODE })}
+                                    required
                                 />
-                                {submitted && !pembayaran.KODE && <small className="p-invalid">Kode is required.</small>}
+                                {submitted && !pembayaran.KODE && <small className="p-error">Kode is required.</small>}
                             </div>
                             <div className="field">
                                 <label htmlFor="pemilik">Pemilik</label>
