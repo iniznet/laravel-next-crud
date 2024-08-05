@@ -26,6 +26,11 @@ class BarangService extends Model
 
     public function services()
     {
-        return $this->hasMany(SparepartService::class, 'KODE_BARANG', 'KODE');
+        return $this->hasMany(SparepartService::class, 'KODE_SERVICE', 'KODE_SERVICE');
+    }
+
+    public function attachedServices()
+    {
+        return $this->services()->where('KODE_BARANG', $this->KODE);
     }
 }

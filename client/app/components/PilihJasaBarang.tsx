@@ -7,30 +7,93 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { formatCurrency } from '@/app/utils/currency';
 import { BarangService, BarangWithServices } from '@/types/notaservice';
-import { Service, ServiceRelation } from '@/types/service';
+import { Service, ServiceOrStock, ServiceOrStockRelation, ServiceRelation } from '@/types/service';
 import { InputNumber } from 'primereact/inputnumber';
+import { TabView, TabPanel } from 'primereact/tabview';
 
 const PilihJasaBarang: React.FC<{
     barangList: BarangWithServices[];
     setBarangList: React.Dispatch<React.SetStateAction<BarangWithServices[]>>;
-    services: Service[];
+    servicesAndStock: ServiceOrStock[];
     errors: Record<string, string[]>;
-}> = ({ barangList, setBarangList, services, errors }) => {
+}> = ({ barangList, setBarangList, servicesAndStock, errors }) => {
     const [selectedBarang, setSelectedBarang] = useState<BarangWithServices | null>(null);
-    const [filteredServices, setFilteredServices] = useState<Service[]>(services);
-    const [serviceFilter, setServiceFilter] = useState('');
-
-    const getErrorMessage = (field: string): string => {
-        return errors[field] ? errors[field][0] : '';
-    };
+    const [filteredItems, setFilteredItems] = useState<ServiceOrStock[]>(servicesAndStock);
+    const [itemFilter, setItemFilter] = useState('');
 
     useEffect(() => {
-        setFilteredServices(
-            services.filter(service =>
-                service.KETERANGAN.toLowerCase().includes(serviceFilter.toLowerCase())
+        setFilteredItems(
+            servicesAndStock.filter(item =>
+                item.KETERANGAN?.toLowerCase().includes(itemFilter.toLowerCase()) ||
+                item.NAMA?.toLowerCase().includes(itemFilter.toLowerCase())
             )
         );
-    }, [serviceFilter, services]);
+    }, [itemFilter, servicesAndStock]);
+
+    const addItemToBarang = (item: ServiceOrStock) => {
+        if (selectedBarang) {
+            const updatedBarang = {
+                ...selectedBarang,
+                services: [
+                    ...selectedBarang.services,
+                    {
+                        KODE_SERVICE: selectedBarang.KODE,
+                        KODE_BARANG: selectedBarang.KODE,
+                        KODE: item.KODE,
+                        HARGA: item.ESTIMASIHARGA || 0,
+                        TYPE: item.TYPE,
+                        NAMA: item.NAMA,
+                        SATUAN: item.SATUAN,
+                        QTY: item.TYPE === 'stock' ? 1 : undefined
+                    } as ServiceRelation // Add type assertion here
+                ]
+            };
+            updateBarangList(updatedBarang);
+        }
+    };
+
+    const updateItemPrice = (itemKode: string, newPrice: number) => {
+        if (selectedBarang) {
+            const updatedBarang = {
+                ...selectedBarang,
+                services: selectedBarang.services.map(s =>
+                    s.KODE === itemKode ? { ...s, HARGA: newPrice } : s
+                )
+            };
+            updateBarangList(updatedBarang);
+        }
+    };
+
+    const updateItemQuantity = (itemKode: string, newQuantity: number) => {
+        if (selectedBarang) {
+            const updatedBarang = {
+                ...selectedBarang,
+                services: selectedBarang.services.map(s =>
+                    s.KODE === itemKode && s.TYPE === 'stock' ? { ...s, QTY: newQuantity } : s
+                )
+            };
+            updateBarangList(updatedBarang);
+        }
+    };
+
+    const removeItemFromBarang = (itemKode: string) => {
+        if (selectedBarang) {
+            const updatedBarang = {
+                ...selectedBarang,
+                services: selectedBarang.services.filter(s => s.KODE !== itemKode)
+            };
+            updateBarangList(updatedBarang);
+        }
+    };
+
+    const itemSelectionBody = (rowData: ServiceOrStock) => (
+        <Button
+            icon="pi pi-plus"
+            className="p-button-rounded p-button-success"
+            onClick={() => addItemToBarang(rowData)}
+            disabled={!selectedBarang || selectedBarang.services.some(s => s.KODE === rowData.KODE)}
+        />
+    );
 
     const updateBarang = useCallback((index: number, field: keyof BarangService, value: string) => {
         setBarangList(prev => {
@@ -45,12 +108,17 @@ const PilihJasaBarang: React.FC<{
 
     const addServiceToBarang = (service: Service) => {
         if (selectedBarang) {
+            const newService: ServiceRelation = {
+                KODE_SERVICE: service.KODE,
+                KODE_BARANG: selectedBarang.KODE,
+                KODE: service.KODE,
+                HARGA: service.ESTIMASIHARGA,
+                TYPE: 'service',
+            };
+
             const updatedBarang = {
                 ...selectedBarang,
-                services: [
-                    ...selectedBarang.services,
-                    { KODE_SERVICE: service.KODE, KODE_BARANG: selectedBarang.KODE, KODE: service.KODE, HARGA: service.ESTIMASIHARGA }
-                ]
+                services: [...selectedBarang.services, newService],
             };
             updateBarangList(updatedBarang);
         }
@@ -106,6 +174,10 @@ const PilihJasaBarang: React.FC<{
         }
     };
 
+    const getErrorMessage = (field: string): string => {
+        return errors[field] ? errors[field][0] : '';
+    };
+
     const barangTemplate = (rowData: BarangWithServices, column: any, field: keyof BarangService) => {
         return (
             <>
@@ -152,33 +224,6 @@ const PilihJasaBarang: React.FC<{
         </div>
     );
 
-    const serviceSelectionBody = (rowData: Service) => (
-        <Button
-            icon="pi pi-plus"
-            className="p-button-rounded p-button-success"
-            onClick={() => addServiceToBarang(rowData)}
-            disabled={!selectedBarang || selectedBarang.services.some(s => s.KODE === rowData.KODE)}
-        />
-    );
-
-    const selectedServicesBody = (rowData: ServiceRelation) => (
-        <div className="flex align-items-center gap-2">
-            <InputNumber
-                value={rowData.HARGA}
-                onValueChange={(e) => updateServicePrice(rowData.KODE, e.value || 0)}
-                mode="currency"
-                currency="IDR"
-                locale="id-ID"
-                minFractionDigits={0}
-            />
-            <Button
-                icon="pi pi-minus"
-                className="p-button-rounded p-button-danger flex-grow"
-                onClick={() => removeServiceFromBarang(rowData.KODE)}
-            />
-        </div>
-    );
-
     return (
         <div className="grid">
             <div className="col-12">
@@ -205,29 +250,69 @@ const PilihJasaBarang: React.FC<{
             {selectedBarang && (
                 <>
                     <div className="col-12 md:col-6 mt-3">
-                        <h5>Available Services</h5>
+                        <h5>Available Services and Stock</h5>
                         <span className="p-input-icon-left mb-2">
                             <i className="pi pi-search" />
                             <InputText
-                                value={serviceFilter}
-                                onChange={(e) => setServiceFilter(e.target.value)}
-                                placeholder="Search services"
+                                value={itemFilter}
+                                onChange={(e) => setItemFilter(e.target.value)}
+                                placeholder="Search services or stock"
                             />
                         </span>
-                        <div style={{ height: '400px', overflow: 'auto' }}>
-                            <DataTable value={filteredServices} scrollable scrollHeight="100%">
-                                <Column field="KODE" header="Service"></Column>
-                                <Column field="KETERANGAN" header="Service"></Column>
-                                <Column field="ESTIMASIHARGA" header="Price" body={(rowData) => formatCurrency(rowData.ESTIMASIHARGA)}></Column>
-                                <Column body={serviceSelectionBody} style={{ width: '10%' }}></Column>
-                            </DataTable>
-                        </div>
+                        <TabView>
+                            <TabPanel header="Services">
+                                <div style={{ height: '400px', overflow: 'auto' }}>
+                                    <DataTable value={filteredItems.filter(item => item.TYPE === 'service')} scrollable scrollHeight="100%">
+                                        <Column field="KODE" header="Code"></Column>
+                                        <Column field="KETERANGAN" header="Description"></Column>
+                                        <Column field="ESTIMASIHARGA" header="Price" body={(rowData) => formatCurrency(rowData.ESTIMASIHARGA)}></Column>
+                                        <Column body={itemSelectionBody} style={{ width: '10%' }}></Column>
+                                    </DataTable>
+                                </div>
+                            </TabPanel>
+                            <TabPanel header="Stock">
+                                <div style={{ height: '400px', overflow: 'auto' }}>
+                                    <DataTable value={filteredItems.filter(item => item.TYPE === 'stock')} scrollable scrollHeight="100%">
+                                        <Column field="KODE" header="Code"></Column>
+                                        <Column field="KETERANGAN" header="Description"></Column>
+                                        <Column field="ESTIMASIHARGA" header="Price" body={(rowData) => formatCurrency(rowData.ESTIMASIHARGA)}></Column>
+                                        <Column body={itemSelectionBody} style={{ width: '10%' }}></Column>
+                                    </DataTable>
+                                </div>
+                            </TabPanel>
+                        </TabView>
                     </div>
                     <div className="col-12 md:col-6 mt-3">
-                        <h5>Selected Services for {selectedBarang.NAMA}</h5>
-                        <DataTable value={selectedBarang.services}>
-                            <Column field="KODE" header="Service Code"></Column>
-                            <Column field="HARGA" header="Price" body={selectedServicesBody}></Column>
+                        <h5>Selected Items for {selectedBarang?.NAMA}</h5>
+                        <DataTable value={selectedBarang?.services}>
+                            <Column field="KODE" header="Code"></Column>
+                            <Column field="TYPE" header="Type" body={(rowData: ServiceRelation) => rowData.TYPE === 'service' ? 'Service' : 'Stock'}></Column>
+                            <Column field="HARGA" header="Price" body={(rowData) => (
+                                <InputNumber
+                                    value={rowData.HARGA}
+                                    onValueChange={(e) => updateItemPrice(rowData.KODE, e.value || 0)}
+                                    mode="currency"
+                                    currency="IDR"
+                                    locale="id-ID"
+                                    minFractionDigits={0}
+                                />
+                            )}></Column>
+                            <Column field="QTY" header="Quantity" body={(rowData: ServiceRelation) => rowData.TYPE === 'service' ? '-' : (
+                                <InputNumber
+                                    value={rowData.QTY}
+                                    onValueChange={(e) => updateItemQuantity(rowData.KODE, e.value || 1)}
+                                    min={1}
+                                />
+                            )} style={{ width: '10%' }}></Column>
+                            <Column body={(rowData) => (
+                                <div className="flex items-center">
+                                    <Button
+                                        icon="pi pi-minus"
+                                        className="p-button-rounded p-button-danger p-button p-component p-button-icon-only"
+                                        onClick={() => removeItemFromBarang(rowData.KODE)}
+                                    />
+                                </div>
+                            )}></Column>
                         </DataTable>
                     </div>
                 </>

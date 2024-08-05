@@ -32,6 +32,7 @@ class NotaServiceRequest extends FormRequest
             'barangList.*.services' => 'required|array',
             'barangList.*.services.*.KODE' => 'required|string',
             'barangList.*.services.*.HARGA' => 'required|numeric',
+            'barangList.*.services.*.TYPE' => 'required|string',
         ];
     }
 }

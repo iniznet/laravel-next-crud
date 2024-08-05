@@ -15,13 +15,14 @@ import Api from '@/apis/Api';
 import { ServiceAPI } from '@/apis/ServiceApi';
 import { formatCurrency } from '@/app/utils/currency';
 import { BarangService, BarangWithServices, NotaService } from '@/types/notaservice';
-import { Service } from '@/types/service';
+import { Service, ServiceOrStock } from '@/types/service';
 import { NotaServiceAPI } from '@/apis/NotaServiceApi';
 import React from 'react';
 import { Skeleton } from 'primereact/skeleton';
 import PilihJasaBarang from '@/app/components/PilihJasaBarang';
 import { InputNumber } from 'primereact/inputnumber';
 import { FieldErrors } from '@/types/message';
+import { ServiceStockAPI } from '@/apis/ServiceStockApi';
 
 const NotaServicePage: React.FC = () => {
     const [notaServices, setNotaServices] = useState<NotaService[]>([]);
@@ -39,6 +40,7 @@ const NotaServicePage: React.FC = () => {
         NOMINALBAYAR: 0,
         DP: 0,
         PENERIMA: '',
+        QUEUE_NUMBER: 0,
     });
     const [services, setServices] = useState<Service[]>([]);
     const [barangList, setBarangList] = useState<BarangWithServices[]>([
@@ -55,21 +57,23 @@ const NotaServicePage: React.FC = () => {
     const dt = useRef<DataTable<any>>(null);
     const [isNewRecord, setIsNewRecord] = useState(true);
     const [errors, setErrors] = useState<FieldErrors>({});
+    const [servicesAndStock, setServicesAndStock] = useState<ServiceOrStock[]>([]);
 
     useEffect(() => {
-        fetchServices();
+        fetchServicesAndStock();
         loadNotaServices();
     }, []);
 
-    const fetchServices = async () => {
+    const fetchServicesAndStock = async () => {
         try {
-            const data = await ServiceAPI.getAll();
-            setServices(data);
+            const data = await ServiceStockAPI.getAll();
+            setServicesAndStock(data);
         } catch (error) {
-            console.error('Error fetching services:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch services', life: 3000 });
+            console.error('Error fetching services and stock:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch services and stock', life: 3000 });
         }
     };
+
 
     const loadNotaServices = async () => {
         setLoading(true);
@@ -108,6 +112,7 @@ const NotaServicePage: React.FC = () => {
                 NOMINALBAYAR: 0,
                 DP: 0,
                 PENERIMA: '',
+                QUEUE_NUMBER: 0,
             });
             setBarangList([{
                 KODE: '1', NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian',
@@ -314,11 +319,12 @@ const NotaServicePage: React.FC = () => {
                         <Column field="PEMILIK" header="Pemilik" sortable></Column>
                         <Column field="NOTELEPON" header="No Telepon" sortable></Column>
                         <Column field="ESTIMASIHARGA" header="Estimasi Harga" sortable body={(rowData) => formatCurrency(rowData.ESTIMASIHARGA)}></Column>
+                        <Column field="QUEUE_NUMBER" header="Antrian" sortable></Column>
                         <Column body={actionBodyTemplate}></Column>
                     </DataTable>
                 )}
 
-            <Dialog visible={notaServiceDialog} style={{ width: '70%' }} header="Nota Service Details" modal className="p-fluid" footer={<div className="flex justify-content-end"><Button label="Cancel" icon="pi pi-times" text onClick={hideDialog} /><Button label="Save" icon="pi pi-check" text onClick={saveNotaService} /></div>} onHide={hideDialog}>
+            <Dialog visible={notaServiceDialog} style={{ width: '85%' }} header="Nota Service Details" modal className="p-fluid" footer={<div className="flex justify-content-end"><Button label="Cancel" icon="pi pi-times" text onClick={hideDialog} /><Button label="Save" icon="pi pi-check" text onClick={saveNotaService} /></div>} onHide={hideDialog}>
                 <TabView>
                     <TabPanel header="Data Klien">
                         <div className="p-fluid">
@@ -347,7 +353,7 @@ const NotaServicePage: React.FC = () => {
                         <PilihJasaBarang
                             barangList={barangList}
                             setBarangList={setBarangList}
-                            services={services}
+                            servicesAndStock={servicesAndStock}
                             errors={errors}
                         />
                     </TabPanel>

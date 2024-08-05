@@ -11,6 +11,7 @@ use App\Http\Controllers\BarangServiceController;
 use App\Http\Controllers\SparepartServiceController;
 use App\Http\Controllers\Auth\AuthenticatedController;
 use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\StockController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('barang-service', BarangServiceController::class);
@@ -21,6 +22,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('nota-service/new-identifiers', [NotaServiceController::class, 'newIdentifiers'])->name('nota-service.new-identifiers');
     Route::post('nota-service/bulk', [NotaServiceController::class, 'bulkDestroy'])->name('nota-service.bulk-destroy');
     Route::apiResource('nota-service', NotaServiceController::class);
+    Route::get('services-stock', [NotaServiceController::class, 'servicesStock'])->name('services-stock');
+
 
     Route::apiResource('sparepart-service', SparepartServiceController::class);
 
@@ -28,6 +31,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('pembayaran/services', [PembayaranController::class, 'services'])->name('pembayaran.services');
     Route::post('pembayaran/bulk', [PembayaranController::class, 'bulkDestroy'])->name('pembayaran.bulk-destroy');
     Route::apiResource('pembayaran', PembayaranController::class);
+
+    Route::get('stocks/new-kode', [StockController::class, 'getNewKode']);
+    Route::post('stocks/bulk', [StockController::class, 'bulkDestroy'])->name('stock.bulk-destroy');
+    Route::apiResource('stocks', StockController::class);
+
 
     Route::get('/user', function (Request $request) {
         return $request->user();

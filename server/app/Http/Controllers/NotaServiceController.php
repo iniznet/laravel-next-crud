@@ -7,6 +7,9 @@ use App\Models\BarangService;
 use App\Models\SparepartService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\NotaServiceRequest;
+use App\Models\MasterJasa;
+use App\Models\Stock;
+use DB;
 use Illuminate\Http\Request;
 
 class NotaServiceController extends Controller
@@ -34,16 +37,18 @@ class NotaServiceController extends Controller
                 'PENERIMA' => $notaService->PENERIMA,
                 'DATETIME' => $notaService->DATETIME,
                 'USERNAME' => $notaService->USERNAME,
+                'QUEUE_NUMBER' => $notaService->queue->QUEUE_NUMBER,
                 'barangList' => $notaService->barangList->map(function ($barang) {
                     return [
                         'KODE' => $barang->KODE,
                         'NAMA' => $barang->NAMA,
                         'KETERANGAN' => $barang->KETERANGAN,
                         'STATUSAMBIL' => $barang->STATUSAMBIL,
-                        'services' => $barang->services->map(function ($service) {
+                        'services' => ($barang->attachedServices()->get())->map(function ($service) {
                             return [
                                 'KODE' => $service->KODE,
                                 'HARGA' => $service->HARGA,
+                                'TYPE' => $service->STATUS === 'J' ? 'service' : 'stock'
                             ];
                         }),
                     ];
@@ -85,17 +90,19 @@ class NotaServiceController extends Controller
                 'STATUSAMBIL' => $barang['STATUSAMBIL'],
             ]);
 
-            // Save services for each barang
-            foreach ($barang['services'] as $service) {
+            // Save services and stock items for each barang
+            foreach ($barang['services'] as $item) {
                 SparepartService::create([
                     'KODE_SERVICE' => $notaService->KODE,
                     'KODE_BARANG' => $barangService->KODE,
-                    'KODE' => $service['KODE'],
-                    'HARGA' => $service['HARGA'],
-                    'STATUS' => 'J'
+                    'KODE' => $item['KODE'],
+                    'HARGA' => $item['HARGA'],
+                    'STATUS' => $item['TYPE'] === 'service' ? 'J' : 'B'
                 ]);
             }
         }
+
+        return response()->json($notaService, 201);
     }
 
     public function show(string $faktur)
@@ -117,7 +124,7 @@ class NotaServiceController extends Controller
 
         // Process and save barang list with services
         $notaService->barangList()->delete();
-        $notaService->selectedServices()->delete();
+        SparepartService::where('KODE_SERVICE', $notaService->KODE)->delete();
 
         foreach ($data['barangList'] as $barang) {
             $barangService = BarangService::create([
@@ -129,14 +136,14 @@ class NotaServiceController extends Controller
                 'STATUSAMBIL' => $barang['STATUSAMBIL'],
             ]);
 
-            // Save services for each barang
-            foreach ($barang['services'] as $service) {
+            // Save services and stock items for each barang
+            foreach ($barang['services'] as $item) {
                 SparepartService::create([
                     'KODE_SERVICE' => $notaService->KODE,
                     'KODE_BARANG' => $barangService->KODE,
-                    'KODE' => $service['KODE'],
-                    'HARGA' => $service['HARGA'],
-                    'STATUS' => 'J'
+                    'KODE' => $item['KODE'],
+                    'HARGA' => $item['HARGA'],
+                    'STATUS' => $item['TYPE'] === 'service' ? 'J' : 'B'
                 ]);
             }
         }
@@ -170,6 +177,21 @@ class NotaServiceController extends Controller
         }
 
         return response()->json(null, 204);
+    }
+
+    public function servicesStock()
+    {
+        $services = MasterJasa::select('KODE', 'KETERANGAN', 'ESTIMASIHARGA')
+            ->addSelect(DB::raw("'service' as TYPE"))
+            ->get();
+
+        $stock = Stock::select('KODE', 'NAMA as KETERANGAN', 'HJ as ESTIMASIHARGA', 'SATUAN')
+            ->addSelect(DB::raw("'stock' as TYPE"))
+            ->get();
+
+        $servicesAndStock = $services->concat($stock);
+
+        return response()->json($servicesAndStock);
     }
 
     // generate new faktur and kode

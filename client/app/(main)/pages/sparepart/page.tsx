@@ -1,153 +1,135 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
-import { Button } from 'primereact/button';
-import { Column } from 'primereact/column';
-import { DataTable } from 'primereact/datatable';
-import { Dialog } from 'primereact/dialog';
-import { FileUpload } from 'primereact/fileupload';
-import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
-import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { RadioButton, RadioButtonChangeEvent } from 'primereact/radiobutton';
-import { Rating } from 'primereact/rating';
-import { Toast } from 'primereact/toast';
-import { Toolbar } from 'primereact/toolbar';
-import { classNames } from 'primereact/utils';
-import React, { useEffect, useRef, useState } from 'react';
-import { ProductService } from '../../../../demo/service/ProductService';
-import { Demo } from '@/types';
 
-/* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
-const Sparepart = () => {
-    let emptyProduct: Demo.Product = {
-        id: '',
-        name: '',
-        image: '',
-        description: '',
-        category: '',
-        price: 0,
-        quantity: 0,
-        rating: 0,
-        inventoryStatus: 'INSTOCK'
+import React, { useState, useEffect, useRef } from 'react';
+import { DataTable, DataTableValueArray } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Toast } from 'primereact/toast';
+import { Button } from 'primereact/button';
+import { FileUpload } from 'primereact/fileupload';
+import { Toolbar } from 'primereact/toolbar';
+import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
+import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
+import { Calendar } from 'primereact/calendar';
+import { Dropdown } from 'primereact/dropdown';
+import { classNames } from 'primereact/utils';
+import { StockAPI } from '@/apis/StockApi';
+import { Stock } from '@/types/stock';
+import { formatCurrency } from '@/app/utils/currency';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { Skeleton } from 'primereact/skeleton';
+
+const StockPage = () => {
+    let emptyStock: Stock = {
+        KODE: '',
+        KODE_TOKO: '',
+        NAMA: '',
+        HB: 0,
+        HJ: 0,
     };
 
-    const [products, setProducts] = useState(null);
-    const [productDialog, setProductDialog] = useState(false);
-    const [deleteProductDialog, setDeleteProductDialog] = useState(false);
-    const [deleteProductsDialog, setDeleteProductsDialog] = useState(false);
-    const [product, setProduct] = useState<Demo.Product>(emptyProduct);
-    const [selectedProducts, setSelectedProducts] = useState(null);
+    const [stocks, setStocks] = useState<Stock[]>([]);
+    const [stockDialog, setStockDialog] = useState(false);
+    const [deleteStockDialog, setDeleteStockDialog] = useState(false);
+    const [deleteStocksDialog, setDeleteStocksDialog] = useState(false);
+    const [stock, setStock] = useState<Stock>(emptyStock);
+    const [selectedStocks, setSelectedStocks] = useState<Stock[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [loadingKode, setLoadingKode] = useState(false);
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
 
     useEffect(() => {
-        ProductService.getProducts().then((data) => setProducts(data as any));
+        loadStocks();
     }, []);
 
-    const formatCurrency = (value: number) => {
-        return value.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'IDR'
-        });
+    const loadStocks = async () => {
+        setLoading(true);
+        try {
+            const data = await StockAPI.getAll();
+            setStocks(data);
+        } catch (error) {
+            console.error('Error loading stocks:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load stocks', life: 3000 });
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const openNew = () => {
-        setProduct(emptyProduct);
+    const openNew = async () => {
+        setLoadingKode(true);
+        try {
+            const newKode = await StockAPI.getNewKode();
+            setStock({ ...emptyStock, KODE: newKode });
+        } catch (error) {
+            console.error('Error fetching new KODE:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch new KODE', life: 3000 });
+        } finally {
+            setLoadingKode(false);
+        }
         setSubmitted(false);
-        setProductDialog(true);
+        setStockDialog(true);
     };
 
     const hideDialog = () => {
         setSubmitted(false);
-        setProductDialog(false);
+        setStockDialog(false);
     };
 
-    const hideDeleteProductDialog = () => {
-        setDeleteProductDialog(false);
+    const hideDeleteStockDialog = () => {
+        setDeleteStockDialog(false);
     };
 
-    const hideDeleteProductsDialog = () => {
-        setDeleteProductsDialog(false);
+    const hideDeleteStocksDialog = () => {
+        setDeleteStocksDialog(false);
     };
 
-    const saveProduct = () => {
+    const saveStock = async () => {
         setSubmitted(true);
 
-        if (product.name.trim()) {
-            let _products = [...(products as any)];
-            let _product = { ...product };
-            if (product.id) {
-                const index = findIndexById(product.id);
+        if (stock.KODE.trim()) {
+            try {
+                let response;
+                if (stock.ID) {
+                    response = await StockAPI.update(stock.ID.toString(), stock);
+                } else {
+                    response = await StockAPI.create(stock);
+                }
 
-                _products[index] = _product;
-                toast.current?.show({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Product Updated',
-                    life: 3000
-                });
-            } else {
-                _product.id = createId();
-                _product.image = 'product-placeholder.svg';
-                _products.push(_product);
-                toast.current?.show({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Product Created',
-                    life: 3000
-                });
-            }
-
-            setProducts(_products as any);
-            setProductDialog(false);
-            setProduct(emptyProduct);
-        }
-    };
-
-    const editProduct = (product: Demo.Product) => {
-        setProduct({ ...product });
-        setProductDialog(true);
-    };
-
-    const confirmDeleteProduct = (product: Demo.Product) => {
-        setProduct(product);
-        setDeleteProductDialog(true);
-    };
-
-    const deleteProduct = () => {
-        let _products = (products as any)?.filter((val: any) => val.id !== product.id);
-        setProducts(_products);
-        setDeleteProductDialog(false);
-        setProduct(emptyProduct);
-        toast.current?.show({
-            severity: 'success',
-            summary: 'Successful',
-            detail: 'Product Deleted',
-            life: 3000
-        });
-    };
-
-    const findIndexById = (id: string) => {
-        let index = -1;
-        for (let i = 0; i < (products as any)?.length; i++) {
-            if ((products as any)[i].id === id) {
-                index = i;
-                break;
+                loadStocks();
+                setStockDialog(false);
+                setStock(emptyStock);
+                toast.current?.show({ severity: 'success', summary: 'Successful', detail: `Stock ${stock.ID ? 'Updated' : 'Created'}`, life: 3000 });
+            } catch (error) {
+                console.error('Error saving stock:', error);
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save stock', life: 3000 });
             }
         }
-
-        return index;
     };
 
-    const createId = () => {
-        let id = '';
-        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (let i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
+    const editStock = (stock: Stock) => {
+        setStock({ ...stock });
+        setStockDialog(true);
+    };
+
+    const confirmDeleteStock = (stock: Stock) => {
+        setStock(stock);
+        setDeleteStockDialog(true);
+    };
+
+    const deleteStock = async () => {
+        try {
+            await StockAPI.delete(stock.ID!.toString());
+            loadStocks();
+            setDeleteStockDialog(false);
+            setStock(emptyStock);
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Stock Deleted', life: 3000 });
+        } catch (error) {
+            console.error('Error deleting stock:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete stock', life: 3000 });
         }
-        return id;
     };
 
     const exportCSV = () => {
@@ -155,51 +137,40 @@ const Sparepart = () => {
     };
 
     const confirmDeleteSelected = () => {
-        setDeleteProductsDialog(true);
+        setDeleteStocksDialog(true);
     };
 
-    const deleteSelectedProducts = () => {
-        let _products = (products as any)?.filter((val: any) => !(selectedProducts as any)?.includes(val));
-        setProducts(_products);
-        setDeleteProductsDialog(false);
-        setSelectedProducts(null);
-        toast.current?.show({
-            severity: 'success',
-            summary: 'Successful',
-            detail: 'Products Deleted',
-            life: 3000
-        });
+    const deleteSelectedStocks = async () => {
+        try {
+            await StockAPI.bulkDelete(selectedStocks.map(s => s.ID!.toString()));
+            loadStocks();
+            setDeleteStocksDialog(false);
+            setSelectedStocks([]);
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Stocks Deleted', life: 3000 });
+        } catch (error) {
+            console.error('Error deleting stocks:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete stocks', life: 3000 });
+        }
     };
 
-    const onCategoryChange = (e: RadioButtonChangeEvent) => {
-        let _product = { ...product };
-        _product['category'] = e.value;
-        setProduct(_product);
-    };
-
-    const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, name: string) => {
+    const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: keyof Stock) => {
         const val = (e.target && e.target.value) || '';
-        let _product = { ...product };
-        _product[`${name}`] = val;
-
-        setProduct(_product);
+        let _stock = { ...stock, [name]: val };
+        setStock(_stock);
     };
 
-    const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
-        const val = e.value || 0;
-        let _product = { ...product };
-        _product[`${name}`] = val;
-
-        setProduct(_product);
+    const onInputNumberChange = (e: InputNumberValueChangeEvent, name: keyof Stock) => {
+        const val = e.value ?? 0;
+        let _stock = { ...stock, [name]: val };
+        setStock(_stock);
     };
+
 
     const leftToolbarTemplate = () => {
         return (
             <React.Fragment>
-                <div className="my-2">
-                    <Button label="New" icon="pi pi-plus" severity="success" className=" mr-2" onClick={openNew} />
-                    <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedProducts || !(selectedProducts as any).length} />
-                </div>
+                <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} className="mr-2" />
+                <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedStocks || !selectedStocks.length} />
             </React.Fragment>
         );
     };
@@ -213,72 +184,45 @@ const Sparepart = () => {
         );
     };
 
-    const codeBodyTemplate = (rowData: Demo.Product) => {
+    const codeBodyTemplate = (rowData: Stock) => {
         return (
             <>
                 <span className="p-column-title">Code</span>
-                {rowData.code}
+                {rowData.KODE}
             </>
         );
     };
 
-    const nameBodyTemplate = (rowData: Demo.Product) => {
+    const nameBodyTemplate = (rowData: Stock) => {
         return (
             <>
                 <span className="p-column-title">Name</span>
-                {rowData.name}
+                {rowData.NAMA}
             </>
         );
     };
 
-    const imageBodyTemplate = (rowData: Demo.Product) => {
-        return (
-            <>
-                <span className="p-column-title">Image</span>
-                <img src={`/demo/images/product/${rowData.image}`} alt={rowData.image} className="shadow-2" width="100" />
-            </>
-        );
-    };
-
-    const priceBodyTemplate = (rowData: Demo.Product) => {
+    const priceBodyTemplate = (rowData: Stock) => {
         return (
             <>
                 <span className="p-column-title">Price</span>
-                {formatCurrency(rowData.price as number)}
+                {formatCurrency(rowData.HJ)}
             </>
         );
     };
 
-    const categoryBodyTemplate = (rowData: Demo.Product) => {
+    const actionBodyTemplate = (rowData: Stock) => {
         return (
             <>
-                <span className="p-column-title">Category</span>
-                {rowData.category}
-            </>
-        );
-    };
-
-    const statusBodyTemplate = (rowData: Demo.Product) => {
-        return (
-            <>
-                <span className="p-column-title">Status</span>
-                <span className={`product-badge status-${rowData.inventoryStatus?.toLowerCase()}`}>{rowData.inventoryStatus}</span>
-            </>
-        );
-    };
-
-    const actionBodyTemplate = (rowData: Demo.Product) => {
-        return (
-            <>
-                <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editProduct(rowData)} />
-                <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeleteProduct(rowData)} />
+                <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editStock(rowData)} />
+                <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeleteStock(rowData)} />
             </>
         );
     };
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Manage Products</h5>
+            <h5 className="m-0">Manage Stocks</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
@@ -286,22 +230,24 @@ const Sparepart = () => {
         </div>
     );
 
-    const productDialogFooter = (
+    const stockDialogFooter = (
         <>
             <Button label="Cancel" icon="pi pi-times" text onClick={hideDialog} />
-            <Button label="Save" icon="pi pi-check" text onClick={saveProduct} />
+            <Button label="Save" icon="pi pi-check" text onClick={saveStock} />
         </>
     );
-    const deleteProductDialogFooter = (
+
+    const deleteStockDialogFooter = (
         <>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteProductDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteProduct} />
+            <Button label="No" icon="pi pi-times" text onClick={hideDeleteStockDialog} />
+            <Button label="Yes" icon="pi pi-check" text onClick={deleteStock} />
         </>
     );
-    const deleteProductsDialogFooter = (
+
+    const deleteStocksDialogFooter = (
         <>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteProductsDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteSelectedProducts} />
+            <Button label="No" icon="pi pi-times" text onClick={hideDeleteStocksDialog} />
+            <Button label="Yes" icon="pi pi-check" text onClick={deleteSelectedStocks} />
         </>
     );
 
@@ -312,117 +258,85 @@ const Sparepart = () => {
                     <Toast ref={toast} />
                     <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-                    <DataTable
-                        ref={dt}
-                        value={products}
-                        selection={selectedProducts}
-                        onSelectionChange={(e) => setSelectedProducts(e.value as any)}
-                        dataKey="id"
-                        paginator
-                        rows={10}
-                        rowsPerPageOptions={[5, 10, 25]}
-                        className="datatable-responsive"
-                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
-                        globalFilter={globalFilter}
-                        emptyMessage="No products found."
-                        header={header}
-                        responsiveLayout="scroll"
-                    >
-                        <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                        <Column field="code" header="Code" sortable body={codeBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
-                        <Column field="name" header="Name" sortable body={nameBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
-                        <Column header="Image" body={imageBodyTemplate}></Column>
-                        <Column field="price" header="Price" body={priceBodyTemplate} sortable></Column>
-                        <Column field="category" header="Category" sortable body={categoryBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
-                        <Column field="inventoryStatus" header="Status" body={statusBodyTemplate} sortable headerStyle={{ minWidth: '10rem' }}></Column>
-                        <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
-                    </DataTable>
+                    {loading ? (
+                        <DataTable
+                            value={Array.from({ length: 5 }) as DataTableValueArray}
+                            header={header}
+                        >
+                            <Column style={{ width: '4rem' }} body={() => <Skeleton />} />
+                            <Column style={{ width: '10rem' }} header="Code" body={() => <Skeleton />} />
+                            <Column header="Name" body={() => <Skeleton />} />
+                            <Column header="Price" body={() => <Skeleton />} />
+                            <Column body={() => <Skeleton />} />
+                        </DataTable>
+                    ) : (
 
-                    <Dialog visible={productDialog} style={{ width: '450px' }} header="Product Details" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
-                        {product.image && <img src={`/demo/images/product/${product.image}`} alt={product.image} width="150" className="mt-0 mx-auto mb-5 block shadow-2" />}
-                        <div className="field">
-                            <label htmlFor="code">Code</label>
-                            <InputText
-                                id="code"
-                                value={product.code}
-                                onChange={(e) => onInputChange(e, 'code')}
-                                required
-                                autoFocus
-                                className={classNames({
-                                    'p-invalid': submitted && !product.code
-                                })}
-                            />
-                            {submitted && !product.code && <small className="p-invalid">Code is required.</small>}
-                        </div>
-                        <div className="field">
-                            <label htmlFor="name">Name</label>
-                            <InputText
-                                id="name"
-                                value={product.name}
-                                onChange={(e) => onInputChange(e, 'name')}
-                                required
-                                autoFocus
-                                className={classNames({
-                                    'p-invalid': submitted && !product.name
-                                })}
-                            />
-                            {submitted && !product.name && <small className="p-invalid">Name is required.</small>}
-                        </div>
-                        <div className="field">
-                            <label htmlFor="description">Description</label>
-                            <InputTextarea id="description" value={product.description} onChange={(e) => onInputChange(e, 'description')} required rows={3} cols={20} />
-                        </div>
+                        <DataTable
+                            ref={dt}
+                            value={stocks}
+                            selection={selectedStocks}
+                            onSelectionChange={(e) => setSelectedStocks(e.value)}
+                            dataKey="ID"
+                            paginator
+                            rows={10}
+                            rowsPerPageOptions={[5, 10, 25]}
+                            className="datatable-responsive"
+                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} stocks"
+                            globalFilter={globalFilter}
+                            emptyMessage="No stocks found."
+                            header={header}
+                            responsiveLayout="scroll"
+                        >
+                            <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
+                            <Column field="KODE" header="Code" sortable body={codeBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
+                            <Column field="NAMA" header="Name" sortable body={nameBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
+                            <Column field="HJ" header="Price" body={priceBodyTemplate} sortable></Column>
+                            <Column body={actionBodyTemplate}></Column>
+                        </DataTable>
 
-                        <div className="field">
-                            <label className="mb-3">Category</label>
-                            <div className="formgrid grid">
-                                <div className="field-radiobutton col-6">
-                                    <RadioButton inputId="category1" name="category" value="Accessories" onChange={onCategoryChange} checked={product.category === 'Accessories'} />
-                                    <label htmlFor="category1">Accessories</label>
-                                </div>
-                                <div className="field-radiobutton col-6">
-                                    <RadioButton inputId="category2" name="category" value="Clothing" onChange={onCategoryChange} checked={product.category === 'Clothing'} />
-                                    <label htmlFor="category2">Clothing</label>
-                                </div>
-                                <div className="field-radiobutton col-6">
-                                    <RadioButton inputId="category3" name="category" value="Electronics" onChange={onCategoryChange} checked={product.category === 'Electronics'} />
-                                    <label htmlFor="category3">Electronics</label>
-                                </div>
-                                <div className="field-radiobutton col-6">
-                                    <RadioButton inputId="category4" name="category" value="Fitness" onChange={onCategoryChange} checked={product.category === 'Fitness'} />
-                                    <label htmlFor="category4">Fitness</label>
-                                </div>
-                            </div>
-                        </div>
+                    )}
 
-                        <div className="formgrid grid">
-                            <div className="field col">
-                                <label htmlFor="price">Price</label>
-                                <InputNumber id="price" value={product.price} onValueChange={(e) => onInputNumberChange(e, 'price')} mode="currency" currency="IDR" locale="en-US" />
-                            </div>
-                            <div className="field col">
-                                <label htmlFor="quantity">Quantity</label>
-                                <InputNumber id="quantity" value={product.quantity} onValueChange={(e) => onInputNumberChange(e, 'quantity')} />
-                            </div>
+                    <Dialog visible={stockDialog} style={{ width: '450px' }} header="Stock Details" modal className="p-fluid" footer={stockDialogFooter} onHide={hideDialog}>
+                        <div className="field">
+                            <label htmlFor="KODE">Code</label>
+                            <InputText id="KODE" value={stock.KODE} onChange={(e) => onInputChange(e, 'KODE')} required autoFocus className={classNames({ 'p-invalid': submitted && !stock.KODE })} />
+                            {submitted && !stock.KODE && <small className="p-error">Code is required.</small>}
+                        </div>
+                        <div className="field">
+                            <label htmlFor="KODE_TOKO">Store Code</label>
+                            <InputText id="KODE_TOKO" value={stock.KODE_TOKO} onChange={(e) => onInputChange(e, 'KODE_TOKO')} />
+                        </div>
+                        <div className="field">
+                            <label htmlFor="NAMA">Name</label>
+                            <InputText id="NAMA" value={stock.NAMA} onChange={(e) => onInputChange(e, 'NAMA')} required className={classNames({ 'p-invalid': submitted && !stock.NAMA })} />
+                            {submitted && !stock.NAMA && <small className="p-invalid">Name is required.</small>}
+                        </div>
+                        <div className="field">
+                            <label htmlFor="HB">Buy Price</label>
+                            <InputNumber id="HB" value={stock.HB} onValueChange={(e) => onInputNumberChange(e, 'HB')} mode="currency" currency="IDR" locale="id-ID" />
+                        </div>
+                        <div className="field">
+                            <label htmlFor="HJ">Sell Price</label>
+                            <InputNumber id="HJ" value={stock.HJ} onValueChange={(e) => onInputNumberChange(e, 'HJ')} mode="currency" currency="IDR" locale="id-ID" />
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deleteProductDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteProductDialogFooter} onHide={hideDeleteProductDialog}>
+                    <Dialog visible={deleteStockDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteStockDialogFooter} onHide={hideDeleteStockDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {product && (
+                            {stock && (
                                 <span>
-                                    Are you sure you want to delete <b>{product.name}</b>?
+                                    Are you sure you want to delete <b>{stock.NAMA}</b>?
                                 </span>
                             )}
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deleteProductsDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteProductsDialogFooter} onHide={hideDeleteProductsDialog}>
+                    <Dialog visible={deleteStocksDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteStocksDialogFooter} onHide={hideDeleteStocksDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {product && <span>Are you sure you want to delete the selected products?</span>}
+                            {stock && <span>Are you sure you want to delete the selected stocks?</span>}
                         </div>
                     </Dialog>
                 </div>
@@ -431,4 +345,4 @@ const Sparepart = () => {
     );
 };
 
-export default Sparepart;
+export default StockPage;

@@ -30,6 +30,11 @@ class NotaService extends Model
         'DATETIME' => 'datetime'
     ];
 
+    public function queue()
+    {
+        return $this->hasOne(NotaServiceQueue::class, 'ID', 'ID')->select('ID', 'QUEUE_NUMBER');
+    }
+
     public function barangList()
     {
         return $this->hasMany(BarangService::class, 'KODE_SERVICE', 'KODE');

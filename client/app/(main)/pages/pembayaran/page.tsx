@@ -247,8 +247,14 @@ const PembayaranPage: React.FC = () => {
     };
 
     const calculateSisa = () => {
-        return pembayaran.ESTIMASIHARGA - pembayaran.DP - pembayaran.NOMINALBAYAR;
+        return (pembayaran.HARGA > pembayaran.ESTIMASIHARGA)
+            ? pembayaran.HARGA : pembayaran.ESTIMASIHARGA
+            - (pembayaran.DP + pembayaran.NOMINALBAYAR);
     };
+
+    const calculateLunas = () => {
+        return calculateSisa() <= 0;
+    }
 
     const leftToolbarTemplate = () => {
         return (
@@ -356,7 +362,7 @@ const PembayaranPage: React.FC = () => {
                                     <Column field="PEMILIK" header="Pemilik" sortable body={(rowData) => <span>{rowData.PEMILIK}</span>}></Column>
                                     <Column field="TGLBAYAR" header="Tanggal Bayar" sortable body={(rowData) => <span>{new Date(rowData.TGLBAYAR).toLocaleDateString()}</span>}></Column>
                                     <Column field="HARGA" header="Total Harga" sortable body={(rowData) => <span>{formatCurrency(rowData.HARGA)}</span>}></Column>
-                                    <Column header="Status" body={(rowData) => <span>{rowData.NOMINALBAYAR === rowData.HARGA ? 'Lunas' : 'Belum Lunas'}</span>}></Column>
+                                    <Column header="Status" body={(rowData) => <span>{calculateLunas() ? 'Lunas' : 'Belum Lunas'}</span>}></Column>
                                     <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                                 </DataTable>
                             )

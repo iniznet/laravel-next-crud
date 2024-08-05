@@ -11,9 +11,7 @@ class Stock extends Model
 
     protected $table = 'stock';
 
-    protected $primaryKey = ['ID', 'KODE', 'NAMA', 'GOLONGAN'];
-    public $incrementing = false;
-    protected $keyType = 'string';
+    protected $primaryKey = 'ID';
     public $timestamps = false;
 
     protected $fillable = [
