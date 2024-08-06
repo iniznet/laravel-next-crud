@@ -34,6 +34,11 @@ const AppMenu = () => {
                 icon: 'pi pi-fw pi-wallet',
                 to: '/pages/pembayaran'
             },
+            {
+                label: 'Invoice',
+                icon: 'pi pi-fw pi-print',
+                to: '/pages/invoice'
+            },
             ]
         },
         {
