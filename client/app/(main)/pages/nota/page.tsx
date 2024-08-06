@@ -23,6 +23,7 @@ import PilihJasaBarang from '@/app/components/PilihJasaBarang';
 import { InputNumber } from 'primereact/inputnumber';
 import { FieldErrors } from '@/types/message';
 import { ServiceStockAPI } from '@/apis/ServiceStockApi';
+import NotaServiceInvoice from '@/app/components/invoices/NotaServiceInvoice';
 
 const NotaServicePage: React.FC = () => {
     const [notaServices, setNotaServices] = useState<NotaService[]>([]);
@@ -58,6 +59,9 @@ const NotaServicePage: React.FC = () => {
     const [isNewRecord, setIsNewRecord] = useState(true);
     const [errors, setErrors] = useState<FieldErrors>({});
     const [servicesAndStock, setServicesAndStock] = useState<ServiceOrStock[]>([]);
+    const [showInvoice, setShowInvoice] = useState(false);
+    const [invoiceNotaService, setInvoiceNotaService] = useState<NotaService>();
+    const [pdfDataUrl, setPdfDataUrl] = useState('');
 
     useEffect(() => {
         fetchServicesAndStock();
@@ -143,6 +147,15 @@ const NotaServicePage: React.FC = () => {
         return errors[field] ? errors[field][0] : '';
     };
 
+    const handlePdfGenerated = (pdfDataUrl: string) => {
+        setPdfDataUrl(pdfDataUrl);
+    };
+
+    const openInvoice = (notaService: NotaService) => {
+        setInvoiceNotaService(notaService);
+        setShowInvoice(true);
+    };
+
     const saveNotaService = async () => {
         try {
             setErrors({});
@@ -151,15 +164,19 @@ const NotaServicePage: React.FC = () => {
                 barangList
             };
 
+            let savedNotaService: NotaService;
+
             if (isNewRecord) {
-                await NotaServiceAPI.create(dataToSave);
+                savedNotaService = await NotaServiceAPI.create(dataToSave);
             } else {
-                await NotaServiceAPI.update(nota.KODE, dataToSave);
+                savedNotaService = await NotaServiceAPI.update(nota.KODE, dataToSave);
             }
 
             loadNotaServices();
             setNotaServiceDialog(false);
             toast.current?.show({ severity: 'success', summary: 'Success', detail: `Nota Service ${isNewRecord ? 'Created' : 'Updated'} successfully`, life: 3000 });
+
+            openInvoice(savedNotaService);
         } catch (error: any) {
             console.error('Error saving Nota Service:', error);
             if (error.errors) {
@@ -254,6 +271,7 @@ const NotaServicePage: React.FC = () => {
     const actionBodyTemplate = (rowData: NotaService) => {
         return (
             <>
+                <Button icon="pi pi-file-pdf" rounded severity="info" className="mr-2" onClick={() => openInvoice(rowData)} />
                 <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editNotaService(rowData)} />
                 <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeleteNotaService(rowData)} />
             </>
@@ -396,6 +414,21 @@ const NotaServicePage: React.FC = () => {
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                     {nota && <span>Are you sure you want to delete the selected nota services?</span>}
                 </div>
+            </Dialog>
+
+            <Dialog
+                visible={showInvoice}
+                style={{ width: '80vw', height: '80vh' }}
+                onHide={() => setShowInvoice(false)}
+                header="Service Order Preview"
+            >
+                {invoiceNotaService && (
+                    <NotaServiceInvoice
+                        notaService={invoiceNotaService}
+                        onPdfGenerated={handlePdfGenerated}
+                    />
+                )}
+                <iframe src={pdfDataUrl} style={{ width: '100%', height: '100%', border: 'none' }} />
             </Dialog>
         </div>
     );
