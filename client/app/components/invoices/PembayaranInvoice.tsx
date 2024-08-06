@@ -112,14 +112,14 @@ const PembayaranInvoice: React.FC<PembayaranInvoiceProps> = ({ notaService, onPd
                 body: services,
                 theme: 'striped',
                 headStyles: { fillColor: [0, 0, 0] },
-                styles: { cellPadding: 1, fontSize: 10 },
+                styles: { cellPadding: 1, fontSize: 10, halign: 'center' },
                 margin: { left: 20, right: 20 },
                 tableWidth: 'auto',
                 columnStyles: {
-                    0: { cellWidth: 80 },
+                    0: { cellWidth: 80, halign: 'left' },
                     1: { cellWidth: 10 },
-                    2: { cellWidth: 40 },
-                    3: { cellWidth: 40 },
+                    2: { cellWidth: 40, halign: 'right' },
+                    3: { cellWidth: 40, halign: 'right' },
                 },
             });
 
@@ -147,7 +147,7 @@ const PembayaranInvoice: React.FC<PembayaranInvoiceProps> = ({ notaService, onPd
                 ['', '', 'Total', formatCurrency(totalWithTax)],
             ],
             theme: 'striped',
-            styles: { cellPadding: 1, fontSize: 10, halign: 'left' },
+            styles: { cellPadding: 1, fontSize: 10, halign: 'right' },
             margin: { left: 120, right: 20 },
             tableWidth: 'auto',
         });
