@@ -20,8 +20,20 @@ class SparepartService extends Model
         'HARGA' => 'float'
     ];
 
+    protected $with = ['barang', 'service'];
+
     public function notaService()
     {
         return $this->belongsTo(NotaService::class, 'KODE_SERVICE', 'KODE');
+    }
+
+    public function barang()
+    {
+        return $this->belongsTo(Stock::class, 'KODE', 'KODE');
+    }
+
+    public function service()
+    {
+        return $this->belongsTo(MasterJasa::class, 'KODE', 'KODE');
     }
 }

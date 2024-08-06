@@ -11,7 +11,7 @@ export interface ServiceRelation {
     HARGA: number;
     TYPE: 'service' | 'stock';
     QTY?: number;
-    NAMA?: string;
+    NAMA: string;
     SATUAN?: string;
 }
 

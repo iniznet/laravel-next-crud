@@ -64,18 +64,6 @@ const PilihJasaBarang: React.FC<{
         }
     };
 
-    const updateItemQuantity = (itemKode: string, newQuantity: number) => {
-        if (selectedBarang) {
-            const updatedBarang = {
-                ...selectedBarang,
-                services: selectedBarang.services.map(s =>
-                    s.KODE === itemKode && s.TYPE === 'stock' ? { ...s, QTY: newQuantity } : s
-                )
-            };
-            updateBarangList(updatedBarang);
-        }
-    };
-
     const removeItemFromBarang = (itemKode: string) => {
         if (selectedBarang) {
             const updatedBarang = {
@@ -105,46 +93,6 @@ const PilihJasaBarang: React.FC<{
             setSelectedBarang(prev => prev ? { ...prev, [field]: value } : null);
         }
     }, [barangList, selectedBarang]);
-
-    const addServiceToBarang = (service: Service) => {
-        if (selectedBarang) {
-            const newService: ServiceRelation = {
-                KODE_SERVICE: service.KODE,
-                KODE_BARANG: selectedBarang.KODE,
-                KODE: service.KODE,
-                HARGA: service.ESTIMASIHARGA,
-                TYPE: 'service',
-            };
-
-            const updatedBarang = {
-                ...selectedBarang,
-                services: [...selectedBarang.services, newService],
-            };
-            updateBarangList(updatedBarang);
-        }
-    };
-
-    const updateServicePrice = (serviceKode: string, newPrice: number) => {
-        if (selectedBarang) {
-            const updatedBarang = {
-                ...selectedBarang,
-                services: selectedBarang.services.map(s =>
-                    s.KODE === serviceKode ? { ...s, HARGA: newPrice } : s
-                )
-            };
-            updateBarangList(updatedBarang);
-        }
-    };
-
-    const removeServiceFromBarang = (serviceKode: string) => {
-        if (selectedBarang) {
-            const updatedBarang = {
-                ...selectedBarang,
-                services: selectedBarang.services.filter(s => s.KODE !== serviceKode)
-            };
-            updateBarangList(updatedBarang);
-        }
-    };
 
     const updateBarangList = (updatedBarang: BarangWithServices) => {
         const newEstimatedPrice = updatedBarang.services.reduce((sum, service) => sum + service.HARGA, 0);
@@ -297,14 +245,8 @@ const PilihJasaBarang: React.FC<{
                                     minFractionDigits={0}
                                 />
                             )}></Column>
-                            <Column field="QTY" header="Quantity" body={(rowData: ServiceRelation) => rowData.TYPE === 'service' ? '-' : (
-                                <InputNumber
-                                    value={rowData.QTY}
-                                    onValueChange={(e) => updateItemQuantity(rowData.KODE, e.value || 1)}
-                                    min={1}
-                                />
-                            )} style={{ width: '10%' }}></Column>
-                            <Column body={(rowData) => (
+                            <Column field="QTY" header="Quantity" body={(rowData) => rowData.QTY || 1}></Column>
+                            < Column body={(rowData) => (
                                 <div className="flex items-center">
                                     <Button
                                         icon="pi pi-minus"
@@ -316,8 +258,9 @@ const PilihJasaBarang: React.FC<{
                         </DataTable>
                     </div>
                 </>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };
 

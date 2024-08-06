@@ -17,6 +17,7 @@ import { Pembayaran, NotaService, BarangService } from '@/types/notaservice';
 import { formatCurrency } from '@/app/utils/currency';
 import { classNames } from 'primereact/utils';
 import { Skeleton } from 'primereact/skeleton';
+import PembayaranInvoice from '@/app/components/invoices/PembayaranInvoice';
 
 const PembayaranPage: React.FC = () => {
     const [pembayarans, setPembayarans] = useState<Pembayaran[]>([]);
@@ -44,6 +45,9 @@ const PembayaranPage: React.FC = () => {
     const [dataLoaded, setDataLoaded] = useState(false);
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
+    const [showInvoice, setShowInvoice] = useState(false);
+    const [invoiceNotaService, setInvoiceNotaService] = useState<NotaService>();
+    const [pdfDataUrl, setPdfDataUrl] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -74,16 +78,6 @@ const PembayaranPage: React.FC = () => {
         } catch (error) {
             console.error('Error loading pembayarans:', error);
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load pembayarans', life: 3000 });
-        }
-    };
-
-    const loadNotaServiceOptions = async () => {
-        try {
-            const data = await PembayaranAPI.getServices();
-            setNotaServiceOptions(data);
-        } catch (error) {
-            console.error('Error loading nota service options:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load nota service options', life: 3000 });
         }
     };
 
@@ -129,11 +123,12 @@ const PembayaranPage: React.FC = () => {
 
         try {
             if (pembayaran.FAKTUR.trim()) {
+                let savedPembayaran: Pembayaran;
                 if (pembayaran.FAKTUR) {
-                    await PembayaranAPI.update(pembayaran.FAKTUR, pembayaran);
+                    savedPembayaran = await PembayaranAPI.update(pembayaran.FAKTUR, pembayaran);
                     toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Pembayaran Updated', life: 3000 });
                 } else {
-                    await PembayaranAPI.create(pembayaran);
+                    savedPembayaran = await PembayaranAPI.create(pembayaran);
                     toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Pembayaran Created', life: 3000 });
                 }
 
@@ -150,6 +145,10 @@ const PembayaranPage: React.FC = () => {
                     ESTIMASIHARGA: 0,
                     HARGA: 0,
                 });
+
+                const notaService = await NotaServiceAPI.getOne(savedPembayaran.KODE);
+                setInvoiceNotaService(notaService);
+                setShowInvoice(true);
             }
         } catch (error) {
             console.error('Error saving pembayaran:', error);
@@ -190,6 +189,10 @@ const PembayaranPage: React.FC = () => {
             console.error('Error deleting pembayaran:', error);
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete pembayaran', life: 3000 });
         }
+    };
+
+    const handlePdfGenerated = (pdfDataUrl: string) => {
+        setPdfDataUrl(pdfDataUrl);
     };
 
     const exportCSV = () => {
@@ -276,7 +279,12 @@ const PembayaranPage: React.FC = () => {
     const actionBodyTemplate = (rowData: Pembayaran) => {
         return (
             <React.Fragment>
-                <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editPembayaran(rowData)} />
+                <Button icon="pi pi-file-pdf" rounded severity="info" className="mr-2" onClick={async () => {
+                    const notaService = await NotaServiceAPI.getOne(rowData.KODE);
+                    setInvoiceNotaService(notaService);
+                    setShowInvoice(true);
+                }} />
+                <Button icon="pi pi-pencil" rounded severity="success" className="ml-2 mr-2" onClick={() => editPembayaran(rowData)} />
                 <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeletePembayaran(rowData)} />
             </React.Fragment>
         );
@@ -439,6 +447,21 @@ const PembayaranPage: React.FC = () => {
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                             {pembayaran && <span>Are you sure you want to delete the selected pembayarans?</span>}
                         </div>
+                    </Dialog>
+
+                    <Dialog
+                        visible={showInvoice}
+                        style={{ width: '80vw', height: '80vh' }}
+                        onHide={() => setShowInvoice(false)}
+                        header="Invoice Preview"
+                    >
+                        {invoiceNotaService && (
+                            <PembayaranInvoice
+                                notaService={invoiceNotaService}
+                                onPdfGenerated={handlePdfGenerated}
+                            />
+                        )}
+                        <iframe src={pdfDataUrl} style={{ width: '100%', height: '100%', border: 'none' }} />
                     </Dialog>
                 </div>
             </div>

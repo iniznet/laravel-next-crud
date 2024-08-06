@@ -44,9 +44,13 @@ class NotaServiceController extends Controller
                         'NAMA' => $barang->NAMA,
                         'KETERANGAN' => $barang->KETERANGAN,
                         'STATUSAMBIL' => $barang->STATUSAMBIL,
-                        'services' => ($barang->attachedServices()->get())->map(function ($service) {
+                        'services' => ($barang->services()->where(
+                            'KODE_BARANG',
+                            $barang->KODE
+                        )->get())->map(function ($service) {
                             return [
                                 'KODE' => $service->KODE,
+                                'NAMA' => $service->barang->NAMA ?? $service->service->KETERANGAN,
                                 'HARGA' => $service->HARGA,
                                 'TYPE' => $service->STATUS === 'J' ? 'service' : 'stock'
                             ];
@@ -105,9 +109,49 @@ class NotaServiceController extends Controller
         return response()->json($notaService, 201);
     }
 
-    public function show(string $faktur)
+    public function show(string $kode)
     {
-        $notaService = NotaService::with(['selectedServices', 'barangList'])->where('FAKTUR', $faktur)->firstOrFail();
+        $notaService = NotaService::with(['barangList.services'])->where('KODE', $kode)->firstOrFail();
+
+        $notaService = [
+            'ID' => $notaService->ID,
+            'STATUS' => $notaService->STATUS,
+            'FAKTUR' => $notaService->FAKTUR,
+            'KODE' => $notaService->KODE,
+            'TGL' => $notaService->TGL,
+            'TGLBAYAR' => $notaService->TGLBAYAR,
+            'PEMILIK' => $notaService->PEMILIK,
+            'NOTELEPON' => $notaService->NOTELEPON,
+            'ESTIMASISELESAI' => $notaService->ESTIMASISELESAI,
+            'ESTIMASIHARGA' => $notaService->ESTIMASIHARGA,
+            'HARGA' => $notaService->HARGA,
+            'NOMINALBAYAR' => $notaService->NOMINALBAYAR,
+            'DP' => $notaService->DP,
+            'PENERIMA' => $notaService->PENERIMA,
+            'DATETIME' => $notaService->DATETIME,
+            'USERNAME' => $notaService->USERNAME,
+            'QUEUE_NUMBER' => $notaService->queue->QUEUE_NUMBER,
+            'barangList' => $notaService->barangList->map(function ($barang) {
+                return [
+                    'KODE' => $barang->KODE,
+                    'NAMA' => $barang->NAMA,
+                    'KETERANGAN' => $barang->KETERANGAN,
+                    'STATUSAMBIL' => $barang->STATUSAMBIL,
+                    'services' => ($barang->services()->where(
+                        'KODE_BARANG',
+                        $barang->KODE
+                    )->get())->map(function ($service) {
+                        return [
+                            'KODE' => $service->KODE,
+                            'NAMA' => $service->barang->NAMA ?? $service->service->KETERANGAN,
+                            'HARGA' => $service->HARGA,
+                            'TYPE' => $service->STATUS === 'J' ? 'service' : 'stock'
+                        ];
+                    }),
+                ];
+            }),
+        ];
+
         return response()->json($notaService);
     }
 
