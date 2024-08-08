@@ -46,8 +46,7 @@ const PembayaranPage: React.FC = () => {
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
     const [showInvoice, setShowInvoice] = useState(false);
-    const [invoiceNotaService, setInvoiceNotaService] = useState<NotaService>();
-    const [pdfDataUrl, setPdfDataUrl] = useState('');
+    const [invoiceNotaService, setInvoiceNotaService] = useState<NotaService | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -191,8 +190,10 @@ const PembayaranPage: React.FC = () => {
         }
     };
 
-    const handlePdfGenerated = (pdfDataUrl: string) => {
-        setPdfDataUrl(pdfDataUrl);
+    const handleShowInvoice = async (rowData: Pembayaran) => {
+        const notaServiceData = await NotaServiceAPI.getOne(rowData.KODE);
+        setInvoiceNotaService(notaServiceData);
+        setShowInvoice(true);
     };
 
     const exportCSV = () => {
@@ -279,12 +280,8 @@ const PembayaranPage: React.FC = () => {
     const actionBodyTemplate = (rowData: Pembayaran) => {
         return (
             <React.Fragment>
-                <Button icon="pi pi-file-pdf" rounded severity="info" className="mr-2" onClick={async () => {
-                    const notaService = await NotaServiceAPI.getOne(rowData.KODE);
-                    setInvoiceNotaService(notaService);
-                    setShowInvoice(true);
-                }} />
-                <Button icon="pi pi-pencil" rounded severity="success" className="ml-2 mr-2" onClick={() => editPembayaran(rowData)} />
+                <Button icon="pi pi-print" rounded onClick={() => handleShowInvoice(rowData)} className="mr-2" />
+                <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editPembayaran(rowData)} />
                 <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeletePembayaran(rowData)} />
             </React.Fragment>
         );
@@ -449,20 +446,11 @@ const PembayaranPage: React.FC = () => {
                         </div>
                     </Dialog>
 
-                    <Dialog
+                    <PembayaranInvoice
+                        notaService={invoiceNotaService}
                         visible={showInvoice}
-                        style={{ width: '80vw', height: '80vh' }}
-                        onHide={() => setShowInvoice(false)}
-                        header="Invoice Preview"
-                    >
-                        {invoiceNotaService && (
-                            <PembayaranInvoice
-                                notaService={invoiceNotaService}
-                                onPdfGenerated={handlePdfGenerated}
-                            />
-                        )}
-                        <iframe src={pdfDataUrl} style={{ width: '100%', height: '100%', border: 'none' }} />
-                    </Dialog>
+                        onClose={() => setShowInvoice(false)}
+                    />
                 </div>
             </div>
         </div>
