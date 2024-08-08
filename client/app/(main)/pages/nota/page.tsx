@@ -60,8 +60,7 @@ const NotaServicePage: React.FC = () => {
     const [errors, setErrors] = useState<FieldErrors>({});
     const [servicesAndStock, setServicesAndStock] = useState<ServiceOrStock[]>([]);
     const [showInvoice, setShowInvoice] = useState(false);
-    const [invoiceNotaService, setInvoiceNotaService] = useState<NotaService>();
-    const [pdfDataUrl, setPdfDataUrl] = useState('');
+    const [invoiceNotaService, setInvoiceNotaService] = useState<NotaService | null>(null);
 
     useEffect(() => {
         fetchServicesAndStock();
@@ -147,8 +146,10 @@ const NotaServicePage: React.FC = () => {
         return errors[field] ? errors[field][0] : '';
     };
 
-    const handlePdfGenerated = (pdfDataUrl: string) => {
-        setPdfDataUrl(pdfDataUrl);
+    const handleShowInvoice = async (rowData: NotaService) => {
+        const notaServiceData = await NotaServiceAPI.getOne(rowData.KODE);
+        setInvoiceNotaService(notaServiceData);
+        setShowInvoice(true);
     };
 
     const openInvoice = (notaService: NotaService) => {
@@ -173,10 +174,11 @@ const NotaServicePage: React.FC = () => {
             }
 
             loadNotaServices();
-            setNotaServiceDialog(false);
             toast.current?.show({ severity: 'success', summary: 'Success', detail: `Nota Service ${isNewRecord ? 'Created' : 'Updated'} successfully`, life: 3000 });
 
-            openInvoice(savedNotaService);
+            const notaService = await NotaServiceAPI.getOne(savedNotaService.KODE);
+            setInvoiceNotaService(notaService);
+            setShowInvoice(true);
         } catch (error: any) {
             console.error('Error saving Nota Service:', error);
             if (error.errors) {
@@ -271,7 +273,7 @@ const NotaServicePage: React.FC = () => {
     const actionBodyTemplate = (rowData: NotaService) => {
         return (
             <>
-                <Button icon="pi pi-file-pdf" rounded severity="info" className="mr-2" onClick={() => openInvoice(rowData)} />
+                <Button icon="pi pi-file-pdf" rounded severity="info" className="mr-2" onClick={() => handleShowInvoice(rowData)} />
                 <Button icon="pi pi-pencil" rounded severity="success" className="mr-2" onClick={() => editNotaService(rowData)} />
                 <Button icon="pi pi-trash" rounded severity="warning" onClick={() => confirmDeleteNotaService(rowData)} />
             </>
@@ -416,20 +418,11 @@ const NotaServicePage: React.FC = () => {
                 </div>
             </Dialog>
 
-            <Dialog
+            <NotaServiceInvoice
+                notaService={invoiceNotaService}
                 visible={showInvoice}
-                style={{ width: '80vw', height: '80vh' }}
-                onHide={() => setShowInvoice(false)}
-                header="Service Order Preview"
-            >
-                {invoiceNotaService && (
-                    <NotaServiceInvoice
-                        notaService={invoiceNotaService}
-                        onPdfGenerated={handlePdfGenerated}
-                    />
-                )}
-                <iframe src={pdfDataUrl} style={{ width: '100%', height: '100%', border: 'none' }} />
-            </Dialog>
+                onClose={() => setShowInvoice(false)}
+            />
         </div>
     );
 };
