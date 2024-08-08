@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BarangServiceController;
 use App\Http\Controllers\SparepartServiceController;
 use App\Http\Controllers\Auth\AuthenticatedController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\StockController;
 
@@ -35,6 +36,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('stocks/new-kode', [StockController::class, 'getNewKode']);
     Route::post('stocks/bulk', [StockController::class, 'bulkDestroy'])->name('stock.bulk-destroy');
     Route::apiResource('stocks', StockController::class);
+
+    Route::get('invoices/new-identifiers', [InvoiceController::class, 'newIdentifiers'])->name('invoices.new-identifiers');
+    Route::apiResource('invoices', InvoiceController::class);
 
 
     Route::get('/user', function (Request $request) {
