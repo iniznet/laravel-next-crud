@@ -61,7 +61,7 @@ const PembayaranPage: React.FC = () => {
                 setDataLoaded(true);
             } catch (error) {
                 console.error('Error loading data:', error);
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load data', life: 3000 });
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat memuat data pembayaran', life: 3000 });
             } finally {
                 setLoading(false);
             }
@@ -76,7 +76,7 @@ const PembayaranPage: React.FC = () => {
             setPembayarans(data);
         } catch (error) {
             console.error('Error loading pembayarans:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load pembayarans', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat memuat data pembayaran', life: 3000 });
         }
     };
 
@@ -100,7 +100,7 @@ const PembayaranPage: React.FC = () => {
             setPembayaranDialog(true);
         } catch (error) {
             console.error('Error getting new identifiers:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to get new identifiers', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat membuat data pembayaran baru', life: 3000 });
         }
     };
 
@@ -125,10 +125,10 @@ const PembayaranPage: React.FC = () => {
                 let savedPembayaran: Pembayaran;
                 if (pembayaran.FAKTUR) {
                     savedPembayaran = await PembayaranAPI.update(pembayaran.FAKTUR, pembayaran);
-                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Pembayaran Updated', life: 3000 });
+                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil memperbarui pembayaran', life: 3000 });
                 } else {
                     savedPembayaran = await PembayaranAPI.create(pembayaran);
-                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Pembayaran Created', life: 3000 });
+                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil menambahkan pembayaran', life: 3000 });
                 }
 
                 loadPembayarans();
@@ -151,7 +151,7 @@ const PembayaranPage: React.FC = () => {
             }
         } catch (error) {
             console.error('Error saving pembayaran:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save pembayaran', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat menyimpan pembayaran', life: 3000 });
         }
     };
 
@@ -183,10 +183,10 @@ const PembayaranPage: React.FC = () => {
                 ESTIMASIHARGA: 0,
                 HARGA: 0,
             });
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Pembayaran Deleted', life: 3000 });
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil menghapus pembayaran', life: 3000 });
         } catch (error) {
             console.error('Error deleting pembayaran:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete pembayaran', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat menghapus pembayaran', life: 3000 });
         }
     };
 
@@ -210,10 +210,10 @@ const PembayaranPage: React.FC = () => {
             loadPembayarans();
             setDeletePembayaransDialog(false);
             setSelectedPembayarans([]);
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Pembayarans Deleted', life: 3000 });
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil menghapus pembayaran yang dipilih', life: 3000 });
         } catch (error) {
             console.error('Error deleting pembayarans:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete pembayarans', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat menghapus pembayaran yang dipilih', life: 3000 });
         }
     };
 
@@ -246,7 +246,7 @@ const PembayaranPage: React.FC = () => {
             setBarangList(notaServiceDetails.barangList || []);
         } catch (error) {
             console.error('Error fetching nota service details:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch nota service details', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat mengambil detail nota service', life: 3000 });
         }
     };
 
@@ -263,8 +263,8 @@ const PembayaranPage: React.FC = () => {
     const leftToolbarTemplate = () => {
         return (
             <React.Fragment>
-                <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} className="mr-2" />
-                <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedPembayarans || !selectedPembayarans.length} />
+                <Button label="Tambah" icon="pi pi-plus" severity="success" onClick={openNew} className="mr-2" />
+                <Button label="Hapus" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedPembayarans || !selectedPembayarans.length} />
             </React.Fragment>
         );
     };
@@ -272,7 +272,7 @@ const PembayaranPage: React.FC = () => {
     const rightToolbarTemplate = () => {
         return (
             <React.Fragment>
-                <Button label="Export" icon="pi pi-u</DataTable>pload" severity="help" onClick={exportCSV} />
+                <Button label="Ekspor" icon="pi pi-u</DataTable>pload" severity="help" onClick={exportCSV} />
             </React.Fragment>
         );
     };
@@ -289,7 +289,7 @@ const PembayaranPage: React.FC = () => {
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Manage Pembayarans</h5>
+            <h5 className="m-0">Pembayaran</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
@@ -299,22 +299,22 @@ const PembayaranPage: React.FC = () => {
 
     const pembayaranDialogFooter = (
         <React.Fragment>
-            <Button label="Cancel" icon="pi pi-times" text onClick={hideDialog} />
-            <Button label="Save" icon="pi pi-check" text onClick={savePembayaran} />
+            <Button label="Batal" icon="pi pi-times" text onClick={hideDialog} />
+            <Button label="Simpan" icon="pi pi-check" text onClick={savePembayaran} />
         </React.Fragment>
     );
 
     const deletePembayaranDialogFooter = (
         <React.Fragment>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeletePembayaranDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deletePembayaran} />
+            <Button label="Batal" icon="pi pi-times" text onClick={hideDeletePembayaranDialog} />
+            <Button label="Ya" icon="pi pi-check" text onClick={deletePembayaran} />
         </React.Fragment>
     );
 
     const deletePembayaransDialogFooter = (
         <React.Fragment>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeletePembayaransDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteSelectedPembayarans} />
+            <Button label="Batal" icon="pi pi-times" text onClick={hideDeletePembayaransDialog} />
+            <Button label="Ya" icon="pi pi-check" text onClick={deleteSelectedPembayarans} />
         </React.Fragment>
     );
 
@@ -339,7 +339,7 @@ const PembayaranPage: React.FC = () => {
                                     <Column style={{ width: '10rem' }} header="Tanggal Bayar" body={() => <Skeleton />} />
                                     <Column style={{ width: '10rem' }} header="Total Harga" body={() => <Skeleton />} />
                                     <Column style={{ width: '10rem' }} header="Status" body={() => <Skeleton />} />
-                                    <Column style={{ width: '10rem' }} header="Actions" body={() => <Skeleton />} />
+                                    <Column style={{ width: '10rem' }} body={() => <Skeleton />} />
                                 </DataTable>
                             )
                             :
@@ -355,9 +355,9 @@ const PembayaranPage: React.FC = () => {
                                     rowsPerPageOptions={[5, 10, 25]}
                                     className="datatable-responsive"
                                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pembayarans"
+                                    currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} pembayaran"
                                     globalFilter={globalFilter}
-                                    emptyMessage="No pembayarans found."
+                                    emptyMessage="Tidak ada data pembayaran yang ditemukan."
                                     header={header}
                                     responsiveLayout="scroll"
                                 >
@@ -373,7 +373,7 @@ const PembayaranPage: React.FC = () => {
                             )
                     }
 
-                    <Dialog visible={pembayaranDialog} style={{ maxWidth: '800px' }} header="Pembayaran Details" modal className="p-fluid" footer={pembayaranDialogFooter} onHide={hideDialog}>
+                    <Dialog visible={pembayaranDialog} style={{ maxWidth: '800px' }} header="Detail Pembayaran" modal className="p-fluid" footer={pembayaranDialogFooter} onHide={hideDialog}>
                         <div className="flex flex-wrap gap-4">
                             <div className="field">
                                 <label htmlFor="faktur">Faktur</label>
@@ -391,7 +391,7 @@ const PembayaranPage: React.FC = () => {
                                     className={classNames({ 'p-invalid': submitted && !pembayaran.KODE })}
                                     required
                                 />
-                                {submitted && !pembayaran.KODE && <small className="p-error">Kode is required.</small>}
+                                {submitted && !pembayaran.KODE && <small className="p-error">Kode wajib diisi.</small>}
                             </div>
                             <div className="field">
                                 <label htmlFor="pemilik">Pemilik</label>
@@ -435,14 +435,14 @@ const PembayaranPage: React.FC = () => {
                     <Dialog visible={deletePembayaranDialog} style={{ width: '450px' }} header="Confirm" modal footer={deletePembayaranDialogFooter} onHide={hideDeletePembayaranDialog}>
                         <div className="confirmation-content">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {pembayaran && <span>Are you sure you want to delete <b>{pembayaran.FAKTUR}</b>?</span>}
+                            {pembayaran && <span>Apa kamu yakin ingin menghapus pembayaran ini?</span>}
                         </div>
                     </Dialog>
 
                     <Dialog visible={deletePembayaransDialog} style={{ width: '450px' }} header="Confirm" modal footer={deletePembayaransDialogFooter} onHide={hideDeletePembayaransDialog}>
                         <div className="confirmation-content">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {pembayaran && <span>Are you sure you want to delete the selected pembayarans?</span>}
+                            {pembayaran && <span>Apa kamu yakin ingin menghapus pembayaran yang dipilih?</span>}
                         </div>
                     </Dialog>
 

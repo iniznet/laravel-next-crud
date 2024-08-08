@@ -20,7 +20,7 @@ const AppMenu = () => {
                 to: '/pages/sparepart'
             },
             {
-                label: 'Service',
+                label: 'Jasa',
                 icon: 'pi pi-fw pi-wrench',
                 to: '/pages/service'
             },
@@ -35,7 +35,7 @@ const AppMenu = () => {
                 to: '/pages/pembayaran'
             },
             {
-                label: 'Invoice',
+                label: 'Tagihan',
                 icon: 'pi pi-fw pi-print',
                 to: '/pages/invoice'
             },

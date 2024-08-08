@@ -73,7 +73,7 @@ const NotaServicePage: React.FC = () => {
             setServicesAndStock(data);
         } catch (error) {
             console.error('Error fetching services and stock:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch services and stock', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat memuat data jasa dan barang', life: 3000 });
         }
     };
 
@@ -87,7 +87,7 @@ const NotaServicePage: React.FC = () => {
             setDataLoaded(true);
         } catch (error) {
             console.error('Error loading nota services:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load nota services', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat memuat data nota service', life: 3000 });
         } finally {
             setLoading(false);
         }
@@ -126,7 +126,7 @@ const NotaServicePage: React.FC = () => {
             setNotaServiceDialog(true);
         } catch (error) {
             console.error('Error getting new identifiers:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to get new identifiers', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat membuat nota service baru', life: 3000 });
         }
     };
 
@@ -174,7 +174,7 @@ const NotaServicePage: React.FC = () => {
             }
 
             loadNotaServices();
-            toast.current?.show({ severity: 'success', summary: 'Success', detail: `Nota Service ${isNewRecord ? 'Created' : 'Updated'} successfully`, life: 3000 });
+            toast.current?.show({ severity: 'success', summary: 'Success', detail: `Berhasil ${isNewRecord ? 'menambahkan' : 'memperbarui'} Nota Service`, life: 3000 });
 
             const notaService = await NotaServiceAPI.getOne(savedNotaService.KODE);
             setInvoiceNotaService(notaService);
@@ -183,9 +183,9 @@ const NotaServicePage: React.FC = () => {
             console.error('Error saving Nota Service:', error);
             if (error.errors) {
                 setErrors(error.errors);
-                toast.current?.show({ severity: 'error', summary: 'Validation Error', detail: error.message, life: 3000 });
+                toast.current?.show({ severity: 'error', summary: 'Tidak memenuhi validasi', detail: error.message || 'Mohon periksa kembali inputan anda', life: 3000 });
             } else {
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: error.message || 'Failed to save Nota Service', life: 3000 });
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: error.message || 'Terjadi kesalahan saat menyimpan Nota Service', life: 3000 });
             }
         }
     };
@@ -193,7 +193,6 @@ const NotaServicePage: React.FC = () => {
     const editNotaService = (notaService: NotaService) => {
         setNota({ ...notaService });
 
-        // calculate estimated price for each barang
         const updatedBarangList = notaService.barangList?.map(barang => {
             const newEstimatedPrice = barang.services.reduce((sum, service) => sum + service.HARGA, 0);
             return { ...barang, ESTIMASIHARGA: newEstimatedPrice };
@@ -213,10 +212,10 @@ const NotaServicePage: React.FC = () => {
             await NotaServiceAPI.delete(nota.KODE);
             loadNotaServices();
             setDeleteNotaServiceDialog(false);
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Nota Service Deleted', life: 3000 });
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil menghapus Nota Service', life: 3000 });
         } catch (error) {
             console.error('Error deleting nota service:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete nota service', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat menghapus Nota Service', life: 3000 });
         }
     };
 
@@ -234,10 +233,10 @@ const NotaServicePage: React.FC = () => {
             loadNotaServices();
             setDeleteNotaServicesDialog(false);
             setSelectedNotaServices([]);
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Nota Services Deleted', life: 3000 });
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil menghapus nota service yang dipilih', life: 3000 });
         } catch (error) {
             console.error('Error deleting nota services:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete nota services', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat menghapus nota service yang dipilih', life: 3000 });
         }
     };
 
@@ -256,8 +255,8 @@ const NotaServicePage: React.FC = () => {
     const leftToolbarTemplate = () => {
         return (
             <React.Fragment>
-                <Button label="New" icon="pi pi-plus" severity="success" className="mr-2" onClick={openNew} />
-                <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedNotaServices || !selectedNotaServices.length} />
+                <Button label="Tambah" icon="pi pi-plus" severity="success" className="mr-2" onClick={openNew} />
+                <Button label="Hapus" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedNotaServices || !selectedNotaServices.length} />
             </React.Fragment>
         );
     };
@@ -265,7 +264,7 @@ const NotaServicePage: React.FC = () => {
     const rightToolbarTemplate = () => {
         return (
             <React.Fragment>
-                <Button label="Export" icon="pi pi-upload" severity="help" onClick={exportCSV} />
+                <Button label="Ekspor" icon="pi pi-upload" severity="help" onClick={exportCSV} />
             </React.Fragment>
         );
     };
@@ -282,7 +281,7 @@ const NotaServicePage: React.FC = () => {
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Manage Nota Services</h5>
+            <h5 className="m-0">Nota Service</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
@@ -326,9 +325,9 @@ const NotaServicePage: React.FC = () => {
                         rowsPerPageOptions={[5, 10, 25]}
                         className="datatable-responsive"
                         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} nota services"
+                        currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} nota service"
                         globalFilter={globalFilter}
-                        emptyMessage="No nota services found."
+                        emptyMessage="Tidak ada nota service yang ditemukan"
                         header={header}
                         responsiveLayout="scroll"
                     >
@@ -344,7 +343,11 @@ const NotaServicePage: React.FC = () => {
                     </DataTable>
                 )}
 
-            <Dialog visible={notaServiceDialog} style={{ width: '85%' }} header="Nota Service Details" modal className="p-fluid" footer={<div className="flex justify-content-end"><Button label="Cancel" icon="pi pi-times" text onClick={hideDialog} /><Button label="Save" icon="pi pi-check" text onClick={saveNotaService} /></div>} onHide={hideDialog}>
+            <Dialog visible={notaServiceDialog} style={{ width: '85%' }} header="Detail Nota Service" modal className="p-fluid" footer={
+                <div className="flex justify-content-end">
+                    <Button label="Batal" icon="pi pi-times" text onClick={hideDialog} />
+                    <Button label="Simpan" icon="pi pi-check" text onClick={saveNotaService} />
+                </div>} onHide={hideDialog}>
                 <TabView>
                     <TabPanel header="Data Klien">
                         <div className="p-fluid">
@@ -400,21 +403,27 @@ const NotaServicePage: React.FC = () => {
                 </TabView>
             </Dialog>
 
-            <Dialog visible={deleteNotaServiceDialog} style={{ width: '450px' }} header="Confirm" modal footer={<div className="flex justify-content-end"><Button label="No" icon="pi pi-times" text onClick={hideDeleteNotaServiceDialog} /><Button label="Yes" icon="pi pi-check" text onClick={deleteNotaService} /></div>} onHide={hideDeleteNotaServiceDialog}>
+            <Dialog visible={deleteNotaServiceDialog} style={{ width: '450px' }} header="Confirm" modal footer={<div className="flex justify-content-end">
+                <Button label="Batal" icon="pi pi-times" text onClick={hideDeleteNotaServiceDialog} />
+                <Button label="Ya" icon="pi pi-check" text onClick={deleteNotaService} />
+            </div>} onHide={hideDeleteNotaServiceDialog}>
                 <div className="flex align-items-center justify-content-center">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                     {nota && (
                         <span>
-                            Are you sure you want to delete <b>{nota.KODE}</b>?
+                            Apakah Anda yakin ingin menghapus nota service ini?
                         </span>
                     )}
                 </div>
             </Dialog>
 
-            <Dialog visible={deleteNotaServicesDialog} style={{ width: '450px' }} header="Confirm" modal footer={<div className="flex justify-content-end"><Button label="No" icon="pi pi-times" text onClick={hideDeleteNotaServicesDialog} /><Button label="Yes" icon="pi pi-check" text onClick={deleteSelectedNotaServices} /></div>} onHide={hideDeleteNotaServicesDialog}>
+            <Dialog visible={deleteNotaServicesDialog} style={{ width: '450px' }} header="Confirm" modal footer={<div className="flex justify-content-end">
+                <Button label="Batal" icon="pi pi-times" text onClick={hideDeleteNotaServicesDialog} />
+                <Button label="Ya" icon="pi pi-check" text onClick={deleteSelectedNotaServices} />
+            </div>} onHide={hideDeleteNotaServicesDialog}>
                 <div className="flex align-items-center justify-content-center">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                    {nota && <span>Are you sure you want to delete the selected nota services?</span>}
+                    {nota && <span>Apakah Anda yakin ingin menghapus nota service yang dipilih?</span>}
                 </div>
             </Dialog>
 

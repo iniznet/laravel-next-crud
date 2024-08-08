@@ -56,7 +56,7 @@ const ServicePage = () => {
             setDataLoaded(true);
         } catch (error) {
             console.error('Error loading services:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load services', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Gagal memuat data Jasa', life: 3000 });
         } finally {
             setLoading(false);
         }
@@ -100,10 +100,10 @@ const ServicePage = () => {
                 loadServices();
                 setServiceDialog(false);
                 setService(emptyService);
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: `Service ${service.KODE ? 'Updated' : 'Created'}`, life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Successful', detail: `Berhasil ${service.KODE ? 'memperbarui' : 'menambahkan'} jasa`, life: 3000 });
             } catch (error) {
                 console.error('Error saving service:', error);
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save service', life: 3000 });
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan dalam menyimpan jasa', life: 3000 });
             }
         }
     };
@@ -124,35 +124,13 @@ const ServicePage = () => {
             loadServices();
             setDeleteServiceDialog(false);
             setService(emptyService);
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Service Deleted', life: 3000 });
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil menghapus jasa', life: 3000 });
         } catch (error) {
             console.error('Error deleting service:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete service', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan dalam menghapus jasa', life: 3000 });
         }
     };
 
-
-
-    const findIndexById = (id: string) => {
-        let index = -1;
-        for (let i = 0; i < (services as any)?.length; i++) {
-            if ((services as any)[i].id === id) {
-                index = i;
-                break;
-            }
-        }
-
-        return index;
-    };
-
-    const createId = () => {
-        let id = '';
-        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (let i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return id;
-    };
 
     const exportCSV = () => {
         dt.current?.exportCSV();
@@ -170,14 +148,13 @@ const ServicePage = () => {
             loadServices();
             setDeleteServicesDialog(false);
             setSelectedServices([]);
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Services Deleted', life: 3000 });
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil menghapus jasa', life: 3000 });
         } catch (error) {
             console.error('Error deleting services:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete services', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan dalam menghapus jasa', life: 3000 });
         }
     };
 
-    // Update the onInputChange function
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, name: keyof Service) => {
         const val = (e.target && e.target.value) || '';
         let _service = { ...service, [name]: val };
@@ -185,7 +162,6 @@ const ServicePage = () => {
         setService(_service);
     };
 
-    // Update the onInputNumberChange function
     const onInputNumberChange = (e: InputNumberValueChangeEvent, name: keyof Service) => {
         const val = e.value || 0;
         let _service = { ...service, [name]: val };
@@ -197,8 +173,8 @@ const ServicePage = () => {
         return (
             <React.Fragment>
                 <div className="my-2">
-                    <Button label="New" icon="pi pi-plus" severity="success" className="mr-2" onClick={openNew} />
-                    <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedServices || !selectedServices.length} />
+                    <Button label="Tambah" icon="pi pi-plus" severity="success" className="mr-2" onClick={openNew} />
+                    <Button label="Hapus" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedServices || !selectedServices.length} />
                 </div>
             </React.Fragment>
         );
@@ -208,7 +184,7 @@ const ServicePage = () => {
         return (
             <React.Fragment>
                 <FileUpload mode="basic" accept="image/*" maxFileSize={1000000} chooseLabel="Import" className="mr-2 inline-block" />
-                <Button label="Export" icon="pi pi-upload" severity="help" onClick={exportCSV} />
+                <Button label="Ekspor" icon="pi pi-upload" severity="help" onClick={exportCSV} />
             </React.Fragment>
         );
     };
@@ -255,7 +231,7 @@ const ServicePage = () => {
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Manage Service</h5>
+            <h5 className="m-0">Master Jasa</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
@@ -265,20 +241,20 @@ const ServicePage = () => {
 
     const serviceDialogFooter = (
         <>
-            <Button label="Cancel" icon="pi pi-times" text onClick={hideDialog} />
-            <Button label="Save" icon="pi pi-check" text onClick={saveService} />
+            <Button label="Batal" icon="pi pi-times" text onClick={hideDialog} />
+            <Button label="Simpan" icon="pi pi-check" text onClick={saveService} />
         </>
     );
     const deleteServiceDialogFooter = (
         <>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteServiceDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteService} />
+            <Button label="Batal" icon="pi pi-times" text onClick={hideDeleteServiceDialog} />
+            <Button label="Ya" icon="pi pi-check" text onClick={deleteService} />
         </>
     );
     const deleteServicesDialogFooter = (
         <>
             <Button label="No" icon="pi pi-times" text onClick={hideDeleteServicesDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteSelectedServices} />
+            <Button label="Ya" icon="pi pi-check" text onClick={deleteSelectedServices} />
         </>
     );
 
@@ -298,7 +274,7 @@ const ServicePage = () => {
                             <Column style={{ width: '10rem' }} header="Kode" body={() => <Skeleton />} />
                             <Column style={{ width: '20rem' }} header="Keterangan" body={() => <Skeleton />} />
                             <Column style={{ width: '10rem' }} header="Estimasi Harga" body={() => <Skeleton />} />
-                            <Column style={{ width: '10rem' }} header="Actions" body={() => <Skeleton />} />
+                            <Column style={{ width: '10rem' }} body={() => <Skeleton />} />
                         </DataTable>
                     ) : (
                         <DataTable
@@ -312,9 +288,9 @@ const ServicePage = () => {
                             rowsPerPageOptions={[5, 10, 25]}
                             className="datatable-responsive"
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} services"
+                            currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} jasa"
                             globalFilter={globalFilter}
-                            emptyMessage="No services found."
+                            emptyMessage="Tidak ada jasa yang ditemukan"
                             header={header}
                             responsiveLayout="scroll"
                         >
@@ -326,7 +302,7 @@ const ServicePage = () => {
                         </DataTable>
                     )}
 
-                    <Dialog visible={serviceDialog} style={{ width: '450px' }} header="Service Details" modal className="p-fluid" footer={serviceDialogFooter} onHide={hideDialog}>
+                    <Dialog visible={serviceDialog} style={{ width: '450px' }} header="Detail Jasa" modal className="p-fluid" footer={serviceDialogFooter} onHide={hideDialog}>
 
                         <div className="field">
                             <label htmlFor="kode">Kode</label>
@@ -340,7 +316,7 @@ const ServicePage = () => {
                                     'p-invalid': submitted && !service.KODE
                                 })}
                             />
-                            {submitted && !service.KODE && <small className="p-error">Kode is required.</small>}
+                            {submitted && !service.KODE && <small className="p-error">Kode wajib diisi.</small>}
                         </div>
                         <div className="field">
                             <label htmlFor="keterangan">Keterangan</label>
@@ -360,7 +336,7 @@ const ServicePage = () => {
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                             {service && (
                                 <span>
-                                    Are you sure you want to delete <b>{service.KODE}</b>?
+                                    Apakah Anda yakin ingin menghapus jasa <b>{service.KODE}</b>?
                                 </span>
                             )}
                         </div>
@@ -369,7 +345,7 @@ const ServicePage = () => {
                     <Dialog visible={deleteServicesDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteServicesDialogFooter} onHide={hideDeleteServicesDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {service && <span>Are you sure you want to delete the selected services?</span>}
+                            {service && <span>Apakah Anda yakin ingin menghapus jasa yang dipilih?</span>}
                         </div>
                     </Dialog>
                 </div>

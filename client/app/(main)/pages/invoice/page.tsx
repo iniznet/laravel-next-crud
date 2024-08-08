@@ -76,7 +76,7 @@ const InvoicePage: React.FC = () => {
             setInvoices(data);
         } catch (error) {
             console.error('Error loading data:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load data', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat memuat data Tagihan', life: 3000 });
         }
     }
 
@@ -94,7 +94,7 @@ const InvoicePage: React.FC = () => {
             await fetchInvoices();
         } catch (error) {
             console.error('Error loading data:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load data', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat memuat data Sparepart dan Jasa', life: 3000 });
         } finally {
             setLoading(false);
         }
@@ -125,7 +125,7 @@ const InvoicePage: React.FC = () => {
             setInvoiceDialog(true);
         } catch (error) {
             console.error('Error getting new identifiers:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to get new identifiers', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat membuat tagihan baru', life: 3000 });
         }
     };
 
@@ -150,10 +150,10 @@ const InvoicePage: React.FC = () => {
                 let savedInvoice: Invoice;
                 if (invoice.id) {
                     savedInvoice = await InvoiceAPI.update(invoice.id, invoice);
-                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Invoice Updated', life: 3000 });
+                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil memperbarui tagihan', life: 3000 });
                 } else {
                     savedInvoice = await InvoiceAPI.create(invoice);
-                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Invoice Created', life: 3000 });
+                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil membuat tagihan', life: 3000 });
                 }
 
                 await fetchInvoices();
@@ -176,7 +176,7 @@ const InvoicePage: React.FC = () => {
             }
         } catch (error) {
             console.error('Error saving invoice:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save invoice', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat menyimpan tagihan', life: 3000 });
         }
     };
 
@@ -211,10 +211,10 @@ const InvoicePage: React.FC = () => {
                 balance_due: 0,
                 items: []
             });
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Invoice Deleted', life: 3000 });
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil menghapus tagihan', life: 3000 });
         } catch (error) {
             console.error('Error deleting invoice:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete invoice', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat menghapus tagihan', life: 3000 });
         }
     };
 
@@ -234,10 +234,10 @@ const InvoicePage: React.FC = () => {
 
             setDeleteInvoicesDialog(false);
             setSelectedInvoices([]);
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Invoices Deleted', life: 3000 });
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil menghapus tagihan yang dipilih', life: 3000 });
         } catch (error) {
             console.error('Error deleting invoices:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete invoices', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat menghapus tagihan yang dipilih', life: 3000 });
         }
     };
 
@@ -297,7 +297,7 @@ const InvoicePage: React.FC = () => {
         }).map(item => {
             return {
                 ...item,
-                label: (item as Stock).NAMA || (item as Service).KETERANGAN || 'Unnamed Item'
+                label: (item as Stock).NAMA || (item as Service).KETERANGAN || 'N/A'
             };
         });
 
@@ -336,8 +336,8 @@ const InvoicePage: React.FC = () => {
     const leftToolbarTemplate = () => {
         return (
             <React.Fragment>
-                <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} className="mr-2" />
-                <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedInvoices || !selectedInvoices.length} />
+                <Button label="Tambah" icon="pi pi-plus" severity="success" onClick={openNew} className="mr-2" />
+                <Button label="Hapus" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedInvoices || !selectedInvoices.length} />
             </React.Fragment>
         );
     };
@@ -345,7 +345,7 @@ const InvoicePage: React.FC = () => {
     const rightToolbarTemplate = () => {
         return (
             <React.Fragment>
-                <Button label="Export" icon="pi pi-upload" severity="help" onClick={exportCSV} />
+                <Button label="Ekspor" icon="pi pi-upload" severity="help" onClick={exportCSV} />
             </React.Fragment>
         );
     };
@@ -362,7 +362,7 @@ const InvoicePage: React.FC = () => {
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Manage Invoices</h5>
+            <h5 className="m-0">Tagihan</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
@@ -372,22 +372,22 @@ const InvoicePage: React.FC = () => {
 
     const invoiceDialogFooter = (
         <React.Fragment>
-            <Button label="Cancel" icon="pi pi-times" text onClick={hideDialog} />
-            <Button label="Save" icon="pi pi-check" text onClick={saveInvoice} />
+            <Button label="Batal" icon="pi pi-times" text onClick={hideDialog} />
+            <Button label="Simpan" icon="pi pi-check" text onClick={saveInvoice} />
         </React.Fragment>
     );
 
     const deleteInvoiceDialogFooter = (
         <React.Fragment>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteInvoiceDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteInvoice} />
+            <Button label="Batal" icon="pi pi-times" text onClick={hideDeleteInvoiceDialog} />
+            <Button label="Ya" icon="pi pi-check" text onClick={deleteInvoice} />
         </React.Fragment>
     );
 
     const deleteInvoicesDialogFooter = (
         <React.Fragment>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteInvoicesDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteSelectedInvoices} />
+            <Button label="Batal" icon="pi pi-times" text onClick={hideDeleteInvoicesDialog} />
+            <Button label="Ya" icon="pi pi-check" text onClick={deleteSelectedInvoices} />
         </React.Fragment>
     );
 
@@ -424,48 +424,48 @@ const InvoicePage: React.FC = () => {
                             rowsPerPageOptions={[5, 10, 25]}
                             className="datatable-responsive"
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} invoices"
+                            currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} tagihan"
                             globalFilter={globalFilter}
-                            emptyMessage="No invoices found."
+                            emptyMessage="Tidak ada tagihan yang ditemukan."
                             header={header}
                             responsiveLayout="scroll"
                             selectionMode="multiple"
                         >
                             <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                            <Column field="invoice_number" header="Invoice Number" sortable body={(rowData) => <span>{rowData.invoice_number}</span>}></Column>
-                            <Column field="from" header="From" sortable body={(rowData) => <span>{rowData.from}</span>}></Column>
-                            <Column field="invoice_date" header="Invoice Date" sortable body={(rowData) => <span>{new Date(rowData.invoice_date).toLocaleDateString()}</span>}></Column>
-                            <Column field="due_date" header="Due Date" sortable body={(rowData) => <span>{rowData.due_date ? new Date(rowData.due_date).toLocaleDateString() : ''}</span>}></Column>
-                            <Column header="Items" body={(rowData) => rowData.items.length}></Column>
+                            <Column field="invoice_number" header="No Tagihan" sortable body={(rowData) => <span>{rowData.invoice_number}</span>}></Column>
+                            <Column field="from" header="Kustomer" sortable body={(rowData) => <span>{rowData.from}</span>}></Column>
+                            <Column field="invoice_date" header="Tanggal" sortable body={(rowData) => <span>{new Date(rowData.invoice_date).toLocaleDateString()}</span>}></Column>
+                            <Column field="due_date" header="Estimasi Selesai" sortable body={(rowData) => <span>{rowData.due_date ? new Date(rowData.due_date).toLocaleDateString() : ''}</span>}></Column>
+                            <Column header="Jumlah Barang" body={(rowData) => rowData.items.length}></Column>
                             <Column field="total" header="Total" sortable body={(rowData) => <span>{rowData.total.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</span>}></Column>
                             <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                         </DataTable>
                     )}
 
-                    <Dialog visible={invoiceDialog} style={{ width: '70vw' }} header="Invoice Details" modal className="p-fluid" footer={invoiceDialogFooter} onHide={hideDialog}>
+                    <Dialog visible={invoiceDialog} style={{ width: '70vw' }} header="Detail Tagihan" modal className="p-fluid" footer={invoiceDialogFooter} onHide={hideDialog}>
                         <div className="formgrid grid">
                             <div className="field col">
-                                <label htmlFor="invoice_number">Invoice Number</label>
+                                <label htmlFor="invoice_number">No Tagihan</label>
                                 <InputText id="invoice_number" value={invoice.invoice_number} onChange={(e) => onInputChange(e, 'invoice_number')} required autoFocus className={classNames({ 'p-invalid': submitted && !invoice.invoice_number })} />
-                                {submitted && !invoice.invoice_number && <small className="p-error">Invoice Number is required.</small>}
+                                {submitted && !invoice.invoice_number && <small className="p-error">No Tagihan wajib diisi.</small>}
                             </div>
                             <div className="field col">
-                                <label htmlFor="invoice_date">Invoice Date</label>
+                                <label htmlFor="invoice_date">Tanggal</label>
                                 <Calendar id="invoice_date" value={new Date(invoice.invoice_date)} onChange={(e) => onInputChange(e as any, 'invoice_date')} showIcon />
                             </div>
                             <div className="field col">
-                                <label htmlFor="due_date">Due Date</label>
+                                <label htmlFor="due_date">Estimasi Selesai</label>
                                 <Calendar id="due_date" value={invoice.due_date ? new Date(invoice.due_date) : null} onChange={(e) => onInputChange(e as any, 'due_date')} showIcon />
                             </div>
                         </div>
                         <div className="formgrid grid">
                             <div className="field col">
-                                <label htmlFor="from">From</label>
+                                <label htmlFor="from">Kustomer</label>
                                 <InputText id="from" value={invoice.from} onChange={(e) => onInputChange(e, 'from')} required className={classNames({ 'p-invalid': submitted && !invoice.from })} />
                                 {submitted && !invoice.from && <small className="p-error">From is required.</small>}
                             </div>
                             <div className="field col">
-                                <label htmlFor="phone_number">Phone Number</label>
+                                <label htmlFor="phone_number">Nomor Telepon</label>
                                 <InputText id="phone_number" value={invoice.phone_number} onChange={(e) => onInputChange(e, 'phone_number')} required />
                             </div>
                         </div>
@@ -474,7 +474,7 @@ const InvoicePage: React.FC = () => {
                         {invoice.items.map((item, index) => (
                             <div key={index} className="formgrid grid">
                                 <div className="field col-5">
-                                    <label htmlFor={`item-description-${index}`}>Description</label>
+                                    <label htmlFor={`item-description-${index}`}>Deskripsi</label>
                                     <AutoComplete
                                         value={item.description}
                                         suggestions={filteredItems}
@@ -486,15 +486,15 @@ const InvoicePage: React.FC = () => {
                                     />
                                 </div>
                                 <div className="field col-2">
-                                    <label htmlFor={`item-quantity-${index}`}>Quantity</label>
+                                    <label htmlFor={`item-quantity-${index}`}>Jumlah</label>
                                     <InputNumber type="number" id={`item-quantity-${index}`} value={item.quantity} onValueChange={(e) => onItemInputChange(e, index, 'quantity')} />
                                 </div>
                                 <div className="field col-2">
-                                    <label htmlFor={`item-price-${index}`}>Price</label>
+                                    <label htmlFor={`item-price-${index}`}>Harga</label>
                                     <InputNumber id={`item-price-${index}`} value={item.price} mode="currency" currency="IDR" locale="id-ID" onValueChange={(e) => onItemInputChange(e, index, 'price')} />
                                 </div>
                                 <div className="field col-2">
-                                    <label htmlFor={`item-amount-${index}`}>Amount</label>
+                                    <label htmlFor={`item-amount-${index}`}>Total</label>
                                     <InputNumber id={`item-amount-${index}`} value={item.amount} mode="currency" currency="IDR" locale="id-ID" readOnly />
                                 </div>
                                 <div className="field col-1 flex align-items-end">
@@ -506,7 +506,7 @@ const InvoicePage: React.FC = () => {
 
                         <div className="formgrid grid mt-4">
                             <div className="field col-6">
-                                <label htmlFor="notes">Notes</label>
+                                <label htmlFor="notes">Catatan</label>
                                 <InputTextarea id="notes" value={invoice.notes} onChange={(e) => onInputChange(e as any, 'notes')} autoResize rows={5} />
                             </div>
                             <div className="field col-6">
@@ -516,7 +516,7 @@ const InvoicePage: React.FC = () => {
                                         <InputNumber id="subtotal" value={invoice.subtotal} mode="currency" currency="IDR" locale="id-ID" readOnly />
                                     </div>
                                     <div className="field col-12">
-                                        <label htmlFor="tax">Tax (%)</label>
+                                        <label htmlFor="tax">Pajak (%)</label>
                                         <InputNumber
                                             id="tax"
                                             value={invoice.tax}
@@ -532,11 +532,11 @@ const InvoicePage: React.FC = () => {
                                         <InputNumber id="total" value={invoice.total} mode="currency" currency="IDR" locale="id-ID" readOnly />
                                     </div>
                                     <div className="field col-12">
-                                        <label htmlFor="amount_paid">Amount Paid</label>
+                                        <label htmlFor="amount_paid">Jumlah Dibayar</label>
                                         <InputNumber id="amount_paid" value={invoice.amount_paid} onValueChange={(e) => onInputNumberChange(e, 'amount_paid')} mode="currency" currency="IDR" locale="id-ID" />
                                     </div>
                                     <div className="field col-12">
-                                        <label htmlFor="balance_due">Balance Due</label>
+                                        <label htmlFor="balance_due">Sisa</label>
                                         <InputNumber id="balance_due" value={invoice.balance_due} mode="currency" currency="IDR" locale="id-ID" readOnly />
                                     </div>
                                 </div>
@@ -547,14 +547,14 @@ const InvoicePage: React.FC = () => {
                     <Dialog visible={deleteInvoiceDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteInvoiceDialogFooter} onHide={hideDeleteInvoiceDialog}>
                         <div className="confirmation-content">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {invoice && <span>Are you sure you want to delete <b>{invoice.invoice_number}</b>?</span>}
+                            {invoice && <span>Apa kamu yakin ingin menghapus tagihan ini?</span>}
                         </div>
                     </Dialog>
 
                     <Dialog visible={deleteInvoicesDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteInvoicesDialogFooter} onHide={hideDeleteInvoicesDialog}>
                         <div className="confirmation-content">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {invoice && <span>Are you sure you want to delete the selected invoices?</span>}
+                            {invoice && <span>Apa kamu yakin ingin menghapus tagihan yang dipilih?</span>}
                         </div>
                     </Dialog>
 

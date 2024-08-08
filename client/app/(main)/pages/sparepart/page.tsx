@@ -52,7 +52,7 @@ const StockPage = () => {
             setStocks(data);
         } catch (error) {
             console.error('Error loading stocks:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load stocks', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat memuat data sparepart', life: 3000 });
         } finally {
             setLoading(false);
         }
@@ -65,7 +65,7 @@ const StockPage = () => {
             setStock({ ...emptyStock, KODE: newKode });
         } catch (error) {
             console.error('Error fetching new KODE:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch new KODE', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat mengambil kode baru', life: 3000 });
         } finally {
             setLoadingKode(false);
         }
@@ -101,10 +101,10 @@ const StockPage = () => {
                 loadStocks();
                 setStockDialog(false);
                 setStock(emptyStock);
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: `Stock ${stock.ID ? 'Updated' : 'Created'}`, life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Successful', detail: `Berhasil ${stock.ID ? 'memperbarui' : 'menambahkan'} sparepart`, life: 3000 });
             } catch (error) {
                 console.error('Error saving stock:', error);
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save stock', life: 3000 });
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat menyimpan sparepart', life: 3000 });
             }
         }
     };
@@ -125,10 +125,10 @@ const StockPage = () => {
             loadStocks();
             setDeleteStockDialog(false);
             setStock(emptyStock);
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Stock Deleted', life: 3000 });
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil menghapus sparepart', life: 3000 });
         } catch (error) {
             console.error('Error deleting stock:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete stock', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat menghapus sparepart', life: 3000 });
         }
     };
 
@@ -146,10 +146,10 @@ const StockPage = () => {
             loadStocks();
             setDeleteStocksDialog(false);
             setSelectedStocks([]);
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Stocks Deleted', life: 3000 });
+            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Berhasil menghapus sparepart yang dipilih', life: 3000 });
         } catch (error) {
             console.error('Error deleting stocks:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete stocks', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Terjadi kesalahan saat menghapus sparepart yang dipilih', life: 3000 });
         }
     };
 
@@ -165,12 +165,11 @@ const StockPage = () => {
         setStock(_stock);
     };
 
-
     const leftToolbarTemplate = () => {
         return (
             <React.Fragment>
-                <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} className="mr-2" />
-                <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedStocks || !selectedStocks.length} />
+                <Button label="Tambah" icon="pi pi-plus" severity="success" onClick={openNew} className="mr-2" />
+                <Button label="Hapus" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedStocks || !selectedStocks.length} />
             </React.Fragment>
         );
     };
@@ -179,7 +178,7 @@ const StockPage = () => {
         return (
             <React.Fragment>
                 <FileUpload mode="basic" accept="image/*" maxFileSize={1000000} chooseLabel="Import" className="mr-2 inline-block" />
-                <Button label="Export" icon="pi pi-upload" severity="help" onClick={exportCSV} />
+                <Button label="Ekspor" icon="pi pi-upload" severity="help" onClick={exportCSV} />
             </React.Fragment>
         );
     };
@@ -187,7 +186,7 @@ const StockPage = () => {
     const codeBodyTemplate = (rowData: Stock) => {
         return (
             <>
-                <span className="p-column-title">Code</span>
+                <span className="p-column-title">Kode</span>
                 {rowData.KODE}
             </>
         );
@@ -196,7 +195,7 @@ const StockPage = () => {
     const nameBodyTemplate = (rowData: Stock) => {
         return (
             <>
-                <span className="p-column-title">Name</span>
+                <span className="p-column-title">Nama</span>
                 {rowData.NAMA}
             </>
         );
@@ -205,7 +204,7 @@ const StockPage = () => {
     const priceBodyTemplate = (rowData: Stock) => {
         return (
             <>
-                <span className="p-column-title">Price</span>
+                <span className="p-column-title">Harga</span>
                 {formatCurrency(rowData.HJ)}
             </>
         );
@@ -222,7 +221,7 @@ const StockPage = () => {
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Manage Stocks</h5>
+            <h5 className="m-0">Master Sparepart</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
@@ -232,22 +231,22 @@ const StockPage = () => {
 
     const stockDialogFooter = (
         <>
-            <Button label="Cancel" icon="pi pi-times" text onClick={hideDialog} />
-            <Button label="Save" icon="pi pi-check" text onClick={saveStock} />
+            <Button label="Batal" icon="pi pi-times" text onClick={hideDialog} />
+            <Button label="Simpan" icon="pi pi-check" text onClick={saveStock} />
         </>
     );
 
     const deleteStockDialogFooter = (
         <>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteStockDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteStock} />
+            <Button label="Batal" icon="pi pi-times" text onClick={hideDeleteStockDialog} />
+            <Button label="Ya" icon="pi pi-check" text onClick={deleteStock} />
         </>
     );
 
     const deleteStocksDialogFooter = (
         <>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteStocksDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteSelectedStocks} />
+            <Button label="Batal" icon="pi pi-times" text onClick={hideDeleteStocksDialog} />
+            <Button label="Ya" icon="pi pi-check" text onClick={deleteSelectedStocks} />
         </>
     );
 
@@ -264,9 +263,9 @@ const StockPage = () => {
                             header={header}
                         >
                             <Column style={{ width: '4rem' }} body={() => <Skeleton />} />
-                            <Column style={{ width: '10rem' }} header="Code" body={() => <Skeleton />} />
-                            <Column header="Name" body={() => <Skeleton />} />
-                            <Column header="Price" body={() => <Skeleton />} />
+                            <Column style={{ width: '10rem' }} header="Kode" body={() => <Skeleton />} />
+                            <Column header="Nama" body={() => <Skeleton />} />
+                            <Column header="Harga" body={() => <Skeleton />} />
                             <Column body={() => <Skeleton />} />
                         </DataTable>
                     ) : (
@@ -282,42 +281,43 @@ const StockPage = () => {
                             rowsPerPageOptions={[5, 10, 25]}
                             className="datatable-responsive"
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} stocks"
+                            currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} spareparts"
                             globalFilter={globalFilter}
-                            emptyMessage="No stocks found."
+                            emptyMessage="Sparepart tidak ditemukan."
                             header={header}
                             responsiveLayout="scroll"
                         >
                             <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                            <Column field="KODE" header="Code" sortable body={codeBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
-                            <Column field="NAMA" header="Name" sortable body={nameBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
-                            <Column field="HJ" header="Price" body={priceBodyTemplate} sortable></Column>
+                            <Column field="KODE" header="Kode" sortable body={codeBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
+                            <Column field="NAMA" header="Nama" sortable body={nameBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
+                            <Column field="HB" header="Modal" body={priceBodyTemplate} sortable></Column>
+                            <Column field="HJ" header="Harga" body={priceBodyTemplate} sortable></Column>
                             <Column body={actionBodyTemplate}></Column>
                         </DataTable>
 
                     )}
 
-                    <Dialog visible={stockDialog} style={{ width: '450px' }} header="Stock Details" modal className="p-fluid" footer={stockDialogFooter} onHide={hideDialog}>
+                    <Dialog visible={stockDialog} style={{ width: '450px' }} header="Detail Sparepart" modal className="p-fluid" footer={stockDialogFooter} onHide={hideDialog}>
                         <div className="field">
-                            <label htmlFor="KODE">Code</label>
+                            <label htmlFor="KODE">Kode</label>
                             <InputText id="KODE" value={stock.KODE} onChange={(e) => onInputChange(e, 'KODE')} required autoFocus className={classNames({ 'p-invalid': submitted && !stock.KODE })} />
-                            {submitted && !stock.KODE && <small className="p-error">Code is required.</small>}
+                            {submitted && !stock.KODE && <small className="p-error">Kode wajib diisi.</small>}
                         </div>
                         <div className="field">
-                            <label htmlFor="KODE_TOKO">Store Code</label>
+                            <label htmlFor="KODE_TOKO">Kode Toko</label>
                             <InputText id="KODE_TOKO" value={stock.KODE_TOKO} onChange={(e) => onInputChange(e, 'KODE_TOKO')} />
                         </div>
                         <div className="field">
-                            <label htmlFor="NAMA">Name</label>
+                            <label htmlFor="NAMA">Nama</label>
                             <InputText id="NAMA" value={stock.NAMA} onChange={(e) => onInputChange(e, 'NAMA')} required className={classNames({ 'p-invalid': submitted && !stock.NAMA })} />
-                            {submitted && !stock.NAMA && <small className="p-invalid">Name is required.</small>}
+                            {submitted && !stock.NAMA && <small className="p-invalid">Nama wajib diisi.</small>}
                         </div>
                         <div className="field">
-                            <label htmlFor="HB">Buy Price</label>
+                            <label htmlFor="HB">Modal</label>
                             <InputNumber id="HB" value={stock.HB} onValueChange={(e) => onInputNumberChange(e, 'HB')} mode="currency" currency="IDR" locale="id-ID" />
                         </div>
                         <div className="field">
-                            <label htmlFor="HJ">Sell Price</label>
+                            <label htmlFor="HJ">Harga</label>
                             <InputNumber id="HJ" value={stock.HJ} onValueChange={(e) => onInputNumberChange(e, 'HJ')} mode="currency" currency="IDR" locale="id-ID" />
                         </div>
                     </Dialog>
@@ -327,7 +327,7 @@ const StockPage = () => {
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                             {stock && (
                                 <span>
-                                    Are you sure you want to delete <b>{stock.NAMA}</b>?
+                                    Apakah Anda yakin ingin menghapus sparepart <b>{stock.NAMA}</b>?
                                 </span>
                             )}
                         </div>
@@ -336,7 +336,7 @@ const StockPage = () => {
                     <Dialog visible={deleteStocksDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteStocksDialogFooter} onHide={hideDeleteStocksDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {stock && <span>Are you sure you want to delete the selected stocks?</span>}
+                            {stock && <span>Apakah Anda yakin ingin menghapus sparepart yang dipilih?</span>}
                         </div>
                     </Dialog>
                 </div>
