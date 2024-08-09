@@ -16,7 +16,7 @@ return new class extends Migration
 
         // Create the view
         DB::statement("
-            CREATE VIEW view_nota_service_queue AS
+            CREATE VIEW view_notaservice_queue AS
             SELECT
                 ID,
                 ESTIMASIHARGA,
