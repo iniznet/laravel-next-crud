@@ -152,11 +152,6 @@ const NotaServicePage: React.FC = () => {
         setShowInvoice(true);
     };
 
-    const openInvoice = (notaService: NotaService) => {
-        setInvoiceNotaService(notaService);
-        setShowInvoice(true);
-    };
-
     const saveNotaService = async () => {
         try {
             setErrors({});

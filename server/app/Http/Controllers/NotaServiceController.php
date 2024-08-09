@@ -37,7 +37,7 @@ class NotaServiceController extends Controller
                 'PENERIMA' => $notaService->PENERIMA,
                 'DATETIME' => $notaService->DATETIME,
                 'USERNAME' => $notaService->USERNAME,
-                'QUEUE_NUMBER' => $notaService->queue->QUEUE_NUMBER,
+                'QUEUE_NUMBER' => $notaService->queue->QUEUE_NUMBER ?? null,
                 'barangList' => $notaService->barangList->map(function ($barang) {
                     return [
                         'KODE' => $barang->KODE,
@@ -130,7 +130,7 @@ class NotaServiceController extends Controller
             'PENERIMA' => $notaService->PENERIMA,
             'DATETIME' => $notaService->DATETIME,
             'USERNAME' => $notaService->USERNAME,
-            'QUEUE_NUMBER' => $notaService->queue->QUEUE_NUMBER,
+            'QUEUE_NUMBER' => $notaService->queue->QUEUE_NUMBER ?? null,
             'barangList' => $notaService->barangList->map(function ($barang) {
                 return [
                     'KODE' => $barang->KODE,

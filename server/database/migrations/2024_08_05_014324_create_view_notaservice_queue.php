@@ -15,27 +15,29 @@ return new class extends Migration
         DB::statement('DROP VIEW IF EXISTS view_notaservice_queue');
 
         // Create the view
-        DB::statement('
-            CREATE VIEW view_notaservice_queue AS
-            SELECT 
-                `notaservice`.`ID` AS `ID`,
-                `notaservice`.`ESTIMASIHARGA` AS `ESTIMASIHARGA`,
-                `notaservice`.`HARGA` AS `HARGA`,
-                `notaservice`.`NOMINALBAYAR` AS `NOMINALBAYAR`,
-                `notaservice`.`DP` AS `DP`,
+        DB::statement("
+            CREATE VIEW view_nota_service_queue AS
+            SELECT
+                ID,
+                ESTIMASIHARGA,
+                HARGA,
+                NOMINALBAYAR,
+                DP,
                 CASE
-                    WHEN (
-                        (
-                            CASE
-                                WHEN (`notaservice`.`HARGA` > `notaservice`.`ESTIMASIHARGA`) OR (`notaservice`.`ESTIMASIHARGA` <= 0) THEN `notaservice`.`HARGA`
-                                ELSE `notaservice`.`ESTIMASIHARGA`
-                            END
-                        ) - (`notaservice`.`NOMINALBAYAR` + `notaservice`.`DP`)
-                    ) > 0 THEN ROW_NUMBER() OVER (ORDER BY `notaservice`.`ID`)
+                    -- Calculate QUEUE_NUMBER if BASE_AMOUNT minus NOMINALBAYAR and DP is greater than 0
+                    WHEN (CASE
+                        WHEN HARGA > ESTIMASIHARGA OR ESTIMASIHARGA <= 0 THEN HARGA
+                        ELSE ESTIMASIHARGA
+                    END - (NOMINALBAYAR + DP)) > 0 THEN ROW_NUMBER() OVER (ORDER BY ID)
+                    -- Otherwise, set QUEUE_NUMBER to NULL
                     ELSE NULL
-                END AS `QUEUE_NUMBER`
-            FROM `notaservice`
-        ');
+                END AS QUEUE_NUMBER
+            FROM notaservice
+            WHERE (CASE
+                    WHEN HARGA > ESTIMASIHARGA OR ESTIMASIHARGA <= 0 THEN HARGA
+                    ELSE ESTIMASIHARGA
+                END - (NOMINALBAYAR + DP)) > 0;
+        ");
     }
 
     /**
