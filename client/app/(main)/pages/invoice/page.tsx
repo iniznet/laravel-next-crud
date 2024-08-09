@@ -436,7 +436,7 @@ const InvoicePage: React.FC = () => {
                             <Column field="from" header="Kustomer" sortable body={(rowData) => <span>{rowData.from}</span>}></Column>
                             <Column field="invoice_date" header="Tanggal" sortable body={(rowData) => <span>{new Date(rowData.invoice_date).toLocaleDateString()}</span>}></Column>
                             <Column field="due_date" header="Estimasi Selesai" sortable body={(rowData) => <span>{rowData.due_date ? new Date(rowData.due_date).toLocaleDateString() : ''}</span>}></Column>
-                            <Column header="Jumlah Barang" body={(rowData) => rowData.items.length}></Column>
+                            <Column header="Jumlah" body={(rowData) => rowData.items.length}></Column>
                             <Column field="total" header="Total" sortable body={(rowData) => <span>{rowData.total.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</span>}></Column>
                             <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                         </DataTable>

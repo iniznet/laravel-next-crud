@@ -10,7 +10,7 @@ export interface ServiceRelation {
     KODE: string;
     HARGA: number;
     TYPE: 'service' | 'stock';
-    QTY?: number;
+    QTY: number;
     NAMA: string;
     SATUAN?: string;
 }

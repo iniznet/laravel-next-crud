@@ -32,56 +32,63 @@ const PilihJasaBarang: React.FC<{
 
     const addItemToBarang = (item: ServiceOrStock) => {
         if (selectedBarang) {
+            const newService = {
+                KODE_SERVICE: selectedBarang.KODE,
+                KODE_BARANG: selectedBarang.KODE,
+                KODE: item.KODE,
+                HARGA: item.ESTIMASIHARGA || 0,
+                TYPE: item.TYPE,
+                NAMA: item.NAMA,
+                SATUAN: item.SATUAN,
+            } as ServiceRelation;
+
             const updatedBarang = {
                 ...selectedBarang,
-                services: [
-                    ...selectedBarang.services,
-                    {
-                        KODE_SERVICE: selectedBarang.KODE,
-                        KODE_BARANG: selectedBarang.KODE,
-                        KODE: item.KODE,
-                        HARGA: item.ESTIMASIHARGA || 0,
-                        TYPE: item.TYPE,
-                        NAMA: item.NAMA,
-                        SATUAN: item.SATUAN,
-                        QTY: item.TYPE === 'stock' ? 1 : undefined
-                    } as ServiceRelation // Add type assertion here
-                ]
+                services: [...selectedBarang.services, newService]
             };
             updateBarangList(updatedBarang);
         }
     };
 
-    const updateItemPrice = (itemKode: string, newPrice: number) => {
-        if (selectedBarang) {
-            const updatedBarang = {
-                ...selectedBarang,
-                services: selectedBarang.services.map(s =>
-                    s.KODE === itemKode ? { ...s, HARGA: newPrice } : s
-                )
-            };
-            updateBarangList(updatedBarang);
-        }
-    };
 
     const removeItemFromBarang = (itemKode: string) => {
         if (selectedBarang) {
-            const updatedBarang = {
-                ...selectedBarang,
-                services: selectedBarang.services.filter(s => s.KODE !== itemKode)
-            };
-            updateBarangList(updatedBarang);
+            const indexToRemove = selectedBarang.services.findLastIndex(service => service.KODE === itemKode);
+            if (indexToRemove !== -1) {
+                const updatedServices = [
+                    ...selectedBarang.services.slice(0, indexToRemove),
+                    ...selectedBarang.services.slice(indexToRemove + 1)
+                ];
+                const updatedBarang = {
+                    ...selectedBarang,
+                    services: updatedServices
+                };
+                updateBarangList(updatedBarang);
+            }
         }
     };
+
 
     const itemSelectionBody = (rowData: ServiceOrStock) => (
         <Button
             icon="pi pi-plus"
             className="p-button-rounded p-button-success"
             onClick={() => addItemToBarang(rowData)}
-            disabled={!selectedBarang || selectedBarang.services.some(s => s.KODE === rowData.KODE)}
         />
     );
+
+    const groupAndSumServices = (services: ServiceRelation[]) => {
+        const groupedServices = services.reduce((acc, service) => {
+            if (!acc[service.KODE]) {
+                acc[service.KODE] = { ...service, QTY: 0, TOTAL_HARGA: 0 };
+            }
+            acc[service.KODE].QTY += 1;
+            acc[service.KODE].TOTAL_HARGA += service.HARGA;
+            return acc;
+        }, {} as Record<string, ServiceRelation & { QTY: number, TOTAL_HARGA: number }>);
+
+        return Object.values(groupedServices);
+    };
 
     const updateBarang = useCallback((index: number, field: keyof BarangService, value: string) => {
         setBarangList(prev => {
@@ -232,21 +239,13 @@ const PilihJasaBarang: React.FC<{
                     </div>
                     <div className="col-12 md:col-6 mt-3">
                         <h5>Selected Items for {selectedBarang?.NAMA}</h5>
-                        <DataTable value={selectedBarang?.services}>
+                        <DataTable value={groupAndSumServices(selectedBarang?.services)}>
                             <Column field="KODE" header="Code"></Column>
                             <Column field="TYPE" header="Type" body={(rowData: ServiceRelation) => rowData.TYPE === 'service' ? 'Service' : 'Stock'}></Column>
-                            <Column field="HARGA" header="Price" body={(rowData) => (
-                                <InputNumber
-                                    value={rowData.HARGA}
-                                    onValueChange={(e) => updateItemPrice(rowData.KODE, e.value || 0)}
-                                    mode="currency"
-                                    currency="IDR"
-                                    locale="id-ID"
-                                    minFractionDigits={0}
-                                />
-                            )}></Column>
-                            <Column field="QTY" header="Quantity" body={(rowData) => rowData.QTY || 1}></Column>
-                            < Column body={(rowData) => (
+                            <Column field="HARGA" header="Price per Unit" body={(rowData) => formatCurrency(rowData.HARGA)}></Column>
+                            <Column field="QTY" header="Quantity"></Column>
+                            <Column field="TOTAL_HARGA" header="Total" body={(rowData) => formatCurrency(rowData.TOTAL_HARGA)}></Column>
+                            <Column body={(rowData) => (
                                 <div className="flex items-center">
                                     <Button
                                         icon="pi pi-minus"
@@ -258,9 +257,8 @@ const PilihJasaBarang: React.FC<{
                         </DataTable>
                     </div>
                 </>
-            )
-            }
-        </div >
+            )}
+        </div>
     );
 };
 

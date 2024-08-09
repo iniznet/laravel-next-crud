@@ -5,6 +5,7 @@ import autoTable from 'jspdf-autotable';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { formatCurrency } from '@/app/utils/currency';
 import { NotaService } from '@/types/notaservice';
+import { ServiceRelation } from '@/types/service';
 
 interface NotaServiceInvoiceProps {
     notaService: NotaService | null;
@@ -42,57 +43,79 @@ const NotaServiceInvoice: React.FC<NotaServiceInvoiceProps> = ({ notaService, vi
             return d.toLocaleDateString();
         };
 
+        const groupServices = (services: ServiceRelation[]) => {
+            const groupedServices: ServiceRelation[] = services.reduce((acc: ServiceRelation[], service: ServiceRelation) => {
+                const existingService = acc.find(s => s.NAMA === service.NAMA && s.HARGA === service.HARGA);
+                if (existingService) {
+                    existingService.QTY += service.QTY || 1;
+                } else {
+                    acc.push({ ...service, QTY: service.QTY || 1 });
+                }
+                return acc;
+            }, []);
+            return groupedServices;
+        };
+
         if (version === 'a4') {
             // A4 Version
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
-            doc.text('Service Order', pageWidth / 2, 20, { align: 'center' });
+            doc.text('Nota Servis', pageWidth / 2, 20, { align: 'center' });
 
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
-            doc.text(`Service No. #: ${notaService.KODE}`, 20, 30);
-            doc.text(`Date: ${formatDate(notaService.TGL)}`, 20, 35);
-            doc.text(`Customer: ${notaService.PEMILIK}`, 20, 40);
-            doc.text(`Phone: ${notaService.NOTELEPON}`, 20, 45);
-            doc.text(`Est. Completion: ${formatDate(notaService.ESTIMASISELESAI)}`, 20, 50);
-            doc.text(`Work Order #: ${notaService.QUEUE_NUMBER || 'N/A'}`, 20, 55);
+            doc.text(`No Servis: ${notaService.KODE}`, 20, 30);
+            doc.text(`Tanggal: ${formatDate(notaService.TGL)}`, 20, 35);
+            doc.text(`Kustomer: ${notaService.PEMILIK}`, 20, 40);
+            doc.text(`No Telepon: ${notaService.NOTELEPON}`, 20, 45);
+            doc.text(`Estimasi Selesai: ${formatDate(notaService.ESTIMASISELESAI)}`, 20, 50);
+            doc.text(`Antrian: ${notaService.QUEUE_NUMBER || 'N/A'}`, 20, 55);
 
             let startY = 65;
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Items and Services', 20, startY);
-
-            startY += 5;
+            let overallTotal = 0;
 
             notaService.barangList?.forEach((barang, index) => {
-                const itemData = [
-                    [`Barang ${index + 1}: ${barang.NAMA}`, '', '', ''],
-                    ['Description:', barang.KETERANGAN || 'N/A', '', ''],
-                    ['Service', 'Qty', 'Price', 'Amount'],
-                ];
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Barang ${index + 1}: ${barang.NAMA}`, 20, startY);
+                startY += 4;
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Deskripsi: ${barang.KETERANGAN || 'N/A'}`, 20, startY);
+                startY += 5;
 
-                barang.services.forEach(service => {
-                    const qty = service.QTY || 1;
-                    const amount = service.HARGA * qty;
-                    itemData.push([
-                        service.NAMA,
-                        qty.toString(),
-                        formatCurrency(service.HARGA),
-                        formatCurrency(amount)
-                    ]);
-                });
+                const groupedServices = groupServices(barang.services);
+                const services = groupedServices.map(service => [
+                    service.NAMA,
+                    service.QTY || 1,
+                    formatCurrency(service.HARGA),
+                    formatCurrency(service.HARGA * (service.QTY || 1)),
+                ]);
+
+                const subtotal = barang.services.reduce((acc, service) => acc + service.HARGA * (service.QTY || 1), 0);
+                overallTotal += subtotal;
+
+                services.push([
+                    '',
+                    '',
+                    'Subtotal',
+                    formatCurrency(subtotal)
+                ]);
 
                 autoTable(doc, {
                     startY: startY,
-                    head: [],
-                    body: itemData,
+                    head: [['Nama', 'Jumlah', 'Harga', 'Total']],
+                    body: services,
                     theme: 'striped',
-                    styles: { cellPadding: 1, fontSize: 8 },
+                    headStyles: { fillColor: [0, 0, 0] },
+                    styles: { cellPadding: 1, fontSize: 10, halign: 'center' },
+                    margin: { left: 20, right: 20 },
+                    tableWidth: 'auto',
                     columnStyles: {
-                        0: { cellWidth: 'auto' },
-                        1: { cellWidth: 20, halign: 'center' },
-                        2: { cellWidth: 30, halign: 'right' },
-                        3: { cellWidth: 30, halign: 'right' },
+                        0: { cellWidth: 80, halign: 'left' },
+                        1: { cellWidth: 10 },
+                        2: { cellWidth: 40, halign: 'right' },
+                        3: { cellWidth: 40, halign: 'right' },
                     },
                 });
 
@@ -104,9 +127,26 @@ const NotaServiceInvoice: React.FC<NotaServiceInvoiceProps> = ({ notaService, vi
                 }
             });
 
-            doc.setFontSize(10);
+            const taxRate = 0.11;
+            const taxAmount = overallTotal * taxRate;
+            const totalWithTax = overallTotal + taxAmount;
+
+            doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            doc.text(`Estimated Total: ${formatCurrency(notaService.ESTIMASIHARGA)}`, pageWidth - 20, startY, { align: 'right' });
+            startY += 10;
+
+            autoTable(doc, {
+                startY: startY,
+                body: [
+                    ['', '', 'Subtotal', formatCurrency(overallTotal)],
+                    ['', '', 'PPN (11%)', formatCurrency(taxAmount)],
+                    ['', '', 'Total', formatCurrency(totalWithTax)],
+                ],
+                theme: 'striped',
+                styles: { cellPadding: 1, fontSize: 10, halign: 'right' },
+                margin: { left: 120, right: 20 },
+                tableWidth: 'auto',
+            });
 
             const pdfData = doc.output('datauristring');
             setPdfDataUrlA4(pdfData);
@@ -121,47 +161,61 @@ const NotaServiceInvoice: React.FC<NotaServiceInvoiceProps> = ({ notaService, vi
 
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            doc.text('Service Order', pageWidth / 2, 10, { align: 'center' });
+            doc.text('Nota Servis', pageWidth / 2, 10, { align: 'center' });
 
             doc.setFontSize(8);
             doc.setFont('helvetica', 'normal');
-            doc.text(`No. #: ${notaService.KODE}`, 5, 15);
-            doc.text(`Date: ${formatDate(notaService.TGL)}`, 5, 20);
-            doc.text(`Customer: ${notaService.PEMILIK}`, 5, 25);
-            doc.text(`Phone: ${notaService.NOTELEPON}`, 5, 30);
-            doc.text(`Est. Completion: ${formatDate(notaService.ESTIMASISELESAI)}`, 5, 35);
-            doc.text(`Work Order #: ${notaService.QUEUE_NUMBER || 'N/A'}`, 5, 40);
+            doc.text(`No Servis: ${notaService.KODE}`, 5, 15);
+            doc.text(`Tanggal: ${formatDate(notaService.TGL)}`, 5, 18);
+            doc.text(`Kustomer: ${notaService.PEMILIK}`, 5, 21);
+            doc.text(`No Telepon: ${notaService.NOTELEPON}`, 5, 24);
+            doc.text(`Estimasi Selesai: ${formatDate(notaService.ESTIMASISELESAI)}`, 5, 27);
+            doc.text(`Antrian: ${notaService.QUEUE_NUMBER || 'N/A'}`, 5, 30);
 
-            drawSeparator(45);
+            drawSeparator(33);
 
-            let startY = 50;
+            let startY = 37;
+            let overallTotal = 0;
 
             notaService.barangList?.forEach((barang, index) => {
                 doc.setFontSize(9);
                 doc.setFont('helvetica', 'bold');
                 doc.text(`Barang ${index + 1}: ${barang.NAMA}`, 5, startY);
-                startY += 5;
+                startY += 4;
                 doc.setFontSize(8);
                 doc.setFont('helvetica', 'normal');
-                doc.text(`Description: ${barang.KETERANGAN || 'N/A'}`, 5, startY);
-                startY += 7;
+                doc.text(`Deskripsi: ${barang.KETERANGAN || 'N/A'}`, 5, startY);
+                startY += 6;
 
+                doc.setFontSize(9);
                 doc.setFont('helvetica', 'bold');
-                doc.text('Service', 5, startY);
-                doc.text('Qty', 45, startY, { align: 'right' });
-                doc.text('Price', 60, startY, { align: 'right' });
-                doc.text('Amount', 75, startY, { align: 'right' });
-                startY += 5;
+                doc.text('Jumlah', 5, startY);
+                doc.text('Harga', 25, startY);
+                doc.text('Total', 55, startY);
+                startY += 2;
+                drawSeparator(startY);
+                startY += 4;
 
-                barang.services.forEach(service => {
+                const groupedServices = groupServices(barang.services);
+                groupedServices.forEach((service, index) => {
                     const qty = service.QTY || 1;
-                    const amount = service.HARGA * qty;
+                    const price = service.HARGA;
+                    const amount = price * qty;
+                    overallTotal += amount;
+
+                    doc.setFontSize(8);
                     doc.setFont('helvetica', 'normal');
-                    doc.text(service.NAMA, 5, startY, { maxWidth: 35 });
-                    doc.text(qty.toString(), 45, startY, { align: 'right' });
-                    doc.text(formatCurrency(service.HARGA), 60, startY, { align: 'right' });
-                    doc.text(formatCurrency(amount), 75, startY, { align: 'right' });
-                    startY += 5;
+                    doc.text(service.NAMA, 5, startY);
+                    startY += 4;
+                    doc.text(qty.toString(), 5, startY);
+                    doc.text(formatCurrency(price), 20, startY);
+                    doc.text(formatCurrency(amount), 50, startY);
+
+                    if (index !== barang.services.length - 1) {
+                        startY += 5;
+                    } else {
+                        startY += 2;
+                    }
                 });
 
                 drawSeparator(startY);
@@ -170,7 +224,8 @@ const NotaServiceInvoice: React.FC<NotaServiceInvoiceProps> = ({ notaService, vi
 
             doc.setFontSize(9);
             doc.setFont('helvetica', 'bold');
-            doc.text(`Estimated Total: ${formatCurrency(notaService.ESTIMASIHARGA)}`, 75, startY, { align: 'right' });
+            doc.text('Total:', 25, startY);
+            doc.text(formatCurrency(overallTotal), 50, startY);
 
             const pdfData = doc.output('datauristring');
             setPdfDataUrlThermal(pdfData);
