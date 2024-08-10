@@ -39,6 +39,7 @@ const ServicePage = () => {
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
     const [errors, setErrors] = useState<FieldErrors>({});
+    const [isNewRecord, setIsNewRecord] = useState(true);
 
     const getErrorMessage = (field: string): string => {
         return errors[field] ? errors[field][0] : '';
@@ -65,6 +66,7 @@ const ServicePage = () => {
     const openNew = () => {
         setService(emptyService);
         setSubmitted(false);
+        setIsNewRecord(true);
         setServiceDialog(true);
     };
 
@@ -87,15 +89,11 @@ const ServicePage = () => {
         if (service.KODE.trim()) {
             let response;
             try {
-                const existingService = await ServiceAPI.getOne(service.KODE);
 
-                if (existingService && existingService.KODE) {
-                    // If a service with the same KODE exists, update it
-                    response = await ServiceAPI.update(service.KODE, service);
-                } else {
-                    // Otherwise, create a new service
+                if (isNewRecord)
                     response = await ServiceAPI.create(service);
-                }
+                else
+                    response = await ServiceAPI.update(service.KODE, service);
 
                 loadServices();
                 setServiceDialog(false);
@@ -110,6 +108,7 @@ const ServicePage = () => {
 
     const editService = (service: Service) => {
         setService({ ...service });
+        setIsNewRecord(false);
         setServiceDialog(true);
     };
 
