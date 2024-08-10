@@ -14,6 +14,8 @@ import { ServiceAPI } from '@/apis/ServiceApi';
 import { Menu } from 'primereact/menu';
 import { LayoutContext } from '@/layout/context/layoutcontext';
 import Link from 'next/link';
+import { AuthAPI } from '@/apis/AuthApi';
+import { useRouter } from 'next/navigation';
 
 const Dashboard: React.FC = () => {
     const [notaServices, setNotaServices] = useState<NotaService[]>([]);
@@ -25,13 +27,26 @@ const Dashboard: React.FC = () => {
     const [lineOptions, setLineOptions] = useState({});
     const { layoutConfig } = useContext(LayoutContext);
 
+    const router = useRouter();
+
     useEffect(() => {
         const fetchData = async () => {
+            try {
+                const auth = await AuthAPI.authenticated();
+
+                if (!auth || auth.role !== 'admin') {
+                    router.push('/auth');
+                }
+            } catch (error) {
+                router.push('/auth');
+                console.log('You are not authenticated');
+            }
+
             try {
                 const [notaServicesData, pembayaranData, servicesData] = await Promise.all([
                     NotaServiceAPI.getAll(),
                     PembayaranAPI.getAll(),
-                    ServiceAPI.getAll()
+                    ServiceAPI.getAll(),
                 ]);
                 setNotaServices(notaServicesData);
                 setPembayaran(pembayaranData);
@@ -55,7 +70,7 @@ const Dashboard: React.FC = () => {
         datasets: [
             {
                 label: 'Revenue',
-                data: pembayaran.slice(0, 7).map(p => p.NOMINALBAYAR),
+                data: pembayaran.length ? pembayaran.slice(0, 7).map(p => p.NOMINALBAYAR) : [],
                 fill: false,
                 backgroundColor: '#2f4860',
                 borderColor: '#2f4860',
@@ -63,7 +78,7 @@ const Dashboard: React.FC = () => {
             },
             {
                 label: 'Estimated Revenue',
-                data: pembayaran.slice(0, 7).map(p => p.ESTIMASIHARGA),
+                data: pembayaran.length ? pembayaran.slice(0, 7).map(p => p.ESTIMASIHARGA) : [],
                 fill: false,
                 backgroundColor: '#00bb7e',
                 borderColor: '#00bb7e',
@@ -174,7 +189,7 @@ const Dashboard: React.FC = () => {
             <div className="col-12 xl:col-6">
                 <div className="card">
                     <h5>Recent Sales</h5>
-                    <DataTable value={notaServices.slice(0, 5)} rows={5} paginator responsiveLayout="scroll">
+                    <DataTable value={notaServices.length ? notaServices.slice(0, 5) : []} rows={5} paginator responsiveLayout="scroll">
                         <Column field="PEMILIK" header="Customer" sortable style={{ width: '15%' }} />
                         <Column field="FAKTUR" header="Invoice" sortable style={{ width: '15%' }} />
                         <Column field="HARGA" header="Price" sortable style={{ width: '35%' }} body={(data) => formatCurrency(data.HARGA)} />
@@ -203,7 +218,7 @@ const Dashboard: React.FC = () => {
                         </div>
                     </div>
                     <ul className="list-none p-0 m-0">
-                        {services.slice(0, 5).map((service, i) => (
+                        {(services.length ? services.slice(0, 5) : []).map((service, i) => (
                             <li key={service.KODE} className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
                                 <div>
                                     <span className="text-900 font-medium mr-2 mb-1 md:mb-0">{service.KETERANGAN}</span>
