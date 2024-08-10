@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { AuthAPI } from '@/apis/AuthApi';
 
 interface AuthContextProps {
     isAuthenticated: boolean;
@@ -18,8 +19,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await axios.get('/api/auth/user');
-                setIsAuthenticated(response.status === 200 && response.data.role === 'admin');
+                const data = await AuthAPI.authenticated();
+                setIsAuthenticated(data?.role === 'admin');
             } catch (error) {
                 setIsAuthenticated(false);
             } finally {

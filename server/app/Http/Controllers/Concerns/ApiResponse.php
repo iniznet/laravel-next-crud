@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use Auth;
 use Exception;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\JsonResponse;
@@ -52,7 +53,7 @@ trait ApiResponse
         return $this->apiResponse(
             data: [
                 'message' => $message ?? 'Authenticated',
-                'data' => auth('sanctum')->user()
+                'data' => Auth::user()
             ],
             code: $response
         );
@@ -102,7 +103,7 @@ trait ApiResponse
     public function respondTeapot(): JsonResponse
     {
         return $this->apiResponse(
-          data: ['message' => 'I\'m a teapot'],
+            data: ['message' => 'I\'m a teapot'],
             code: Response::HTTP_I_AM_A_TEAPOT
         );
     }
@@ -140,7 +141,7 @@ trait ApiResponse
     private function morphMessage(string|Exception $message): string
     {
         return $message instanceof Exception
-          ? $message->getMessage()
-          : $message;
+            ? $message->getMessage()
+            : $message;
     }
 }

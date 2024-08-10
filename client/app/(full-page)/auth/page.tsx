@@ -3,13 +3,13 @@
 import { useState, useContext } from 'react';
 import { classNames } from 'primereact/utils';
 import { LayoutContext } from '../../../layout/context/layoutcontext';
-import { login, register } from '@/app/utils/api';
 import { Message } from '@/types/message';
 import { UserData } from '@/types/user';
 import LoginForm from '@/app/components/LoginForm';
 import RegisterForm from '@/app/components/RegisterForm';
 import { useRouter } from 'next/navigation';
 import { setCookie } from '@/app/utils/cookie';
+import { AuthAPI, InvalidAuthData } from '@/apis/AuthApi';
 
 const LoginRegister: React.FC = () => {
     const [isRegisterActive, setIsRegisterActive] = useState(false);
@@ -23,38 +23,45 @@ const LoginRegister: React.FC = () => {
     };
 
     const handleLogin = async (data: UserData) => {
-        const response = await login(data);
-
-        if (response.status === 200) {
-            setMessage({ type: 'success', content: response.data.message });
-
-            setCookie('sanctum_token', response.data.token, 60 * 60 * 24 * 365);
-
+        try {
+            const response = await AuthAPI.login(data);
+            setMessage({ type: 'success', content: response!.message });
             setTimeout(() => {
                 router.push('/');
             }, 1000);
-        } else {
-            const fieldErrors = response.status === 422 ? (response.data.errors || {}) : {
+        } catch (error) {
+            const { message, errors } = error as InvalidAuthData;
+
+            const fieldErrors = errors ? (errors || {}) : {
                 email: 'Invalid email or password',
                 password: 'Invalid email or password',
             };
 
             setMessage({
                 type: 'error',
-                content: response.data.message,
+                content: message || 'Login failed',
                 fieldErrors,
             });
         }
     };
 
     const handleRegister = async (data: UserData) => {
-        const response = await register(data);
-
-        if (response.status === 201) {
-            setMessage({ type: 'success', content: response.data.message });
+        try {
+            const response = await AuthAPI.register(data);
+            setMessage({ type: 'success', content: response!.message });
             toggleForm();
-        } else {
-            setMessage({ type: 'error', content: response.data.message, fieldErrors: response.data.errors });
+        } catch (error) {
+            const { message, errors } = error as InvalidAuthData;
+
+            const fieldErrors = errors ? (errors || {}) : {
+                email: 'Email is already in use',
+            };
+
+            setMessage({
+                type: 'error',
+                content: message || 'Registration failed',
+                fieldErrors,
+            });
         }
     };
 

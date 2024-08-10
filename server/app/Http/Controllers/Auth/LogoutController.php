@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Auth;
 use Illuminate\Http\Request;
 
 class LogoutController extends Controller
@@ -11,6 +12,7 @@ class LogoutController extends Controller
     {
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        Auth::logout();
 
         return response()->json([
             'message' => __('Successfully logged out'),

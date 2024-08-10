@@ -12,7 +12,7 @@ class AuthenticatedController extends Controller
 
     public function __invoke()
     {
-        if (!Auth::guard('sanctum')->check()) {
+        if (!Auth::check()) {
             return $this->respondUnAuthenticated(__('You are not authenticated!'));
         }
 

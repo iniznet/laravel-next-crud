@@ -10,45 +10,40 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BarangServiceController;
 use App\Http\Controllers\SparepartServiceController;
 use App\Http\Controllers\Auth\AuthenticatedController;
+use App\Http\Controllers\Auth\RefreshController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\StockController;
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('barang-service', BarangServiceController::class);
+Route::apiResource('barang-service', BarangServiceController::class);
 
-    Route::post('master-jasa/bulk', [MasterJasaController::class, 'bulkDestroy'])->name('master-jasa.bulk-destroy');
-    Route::apiResource('master-jasa', MasterJasaController::class);
+Route::post('master-jasa/bulk', [MasterJasaController::class, 'bulkDestroy'])->name('master-jasa.bulk-destroy');
+Route::apiResource('master-jasa', MasterJasaController::class);
 
-    Route::get('nota-service/new-identifiers', [NotaServiceController::class, 'newIdentifiers'])->name('nota-service.new-identifiers');
-    Route::post('nota-service/bulk', [NotaServiceController::class, 'bulkDestroy'])->name('nota-service.bulk-destroy');
-    Route::apiResource('nota-service', NotaServiceController::class);
-    Route::get('services-stock', [NotaServiceController::class, 'servicesStock'])->name('services-stock');
-
-
-    Route::apiResource('sparepart-service', SparepartServiceController::class);
-
-    Route::get('pembayaran/new-identifiers', [PembayaranController::class, 'newIdentifiers'])->name('pembayaran.new-identifiers');
-    Route::get('pembayaran/services', [PembayaranController::class, 'services'])->name('pembayaran.services');
-    Route::post('pembayaran/bulk', [PembayaranController::class, 'bulkDestroy'])->name('pembayaran.bulk-destroy');
-    Route::apiResource('pembayaran', PembayaranController::class);
-
-    Route::get('stocks/new-kode', [StockController::class, 'getNewKode']);
-    Route::post('stocks/bulk', [StockController::class, 'bulkDestroy'])->name('stock.bulk-destroy');
-    Route::apiResource('stocks', StockController::class);
-
-    Route::get('invoices/new-identifiers', [InvoiceController::class, 'newIdentifiers'])->name('invoices.new-identifiers');
-    Route::apiResource('invoices', InvoiceController::class);
+Route::get('nota-service/new-identifiers', [NotaServiceController::class, 'newIdentifiers'])->name('nota-service.new-identifiers');
+Route::post('nota-service/bulk', [NotaServiceController::class, 'bulkDestroy'])->name('nota-service.bulk-destroy');
+Route::apiResource('nota-service', NotaServiceController::class);
+Route::get('services-stock', [NotaServiceController::class, 'servicesStock'])->name('services-stock');
 
 
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-});
+Route::apiResource('sparepart-service', SparepartServiceController::class);
+
+Route::get('pembayaran/new-identifiers', [PembayaranController::class, 'newIdentifiers'])->name('pembayaran.new-identifiers');
+Route::get('pembayaran/services', [PembayaranController::class, 'services'])->name('pembayaran.services');
+Route::post('pembayaran/bulk', [PembayaranController::class, 'bulkDestroy'])->name('pembayaran.bulk-destroy');
+Route::apiResource('pembayaran', PembayaranController::class);
+
+Route::get('stocks/new-kode', [StockController::class, 'getNewKode']);
+Route::post('stocks/bulk', [StockController::class, 'bulkDestroy'])->name('stock.bulk-destroy');
+Route::apiResource('stocks', StockController::class);
+
+Route::get('invoices/new-identifiers', [InvoiceController::class, 'newIdentifiers'])->name('invoices.new-identifiers');
+Route::apiResource('invoices', InvoiceController::class);
 
 Route::prefix('auth')->group(function () {
     Route::get('/', AuthenticatedController::class);
     Route::post('register', RegisterController::class);
     Route::post('login', LoginController::class);
+    Route::post('refresh', RefreshController::class);
     Route::post('logout', LogoutController::class);
 });

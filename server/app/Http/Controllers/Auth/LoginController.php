@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Controllers\Concerns\ApiResponse;
 use Symfony\Component\HttpFoundation\Response;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class LoginController extends Controller
 {
@@ -20,21 +21,31 @@ class LoginController extends Controller
 
         $credentials = $request->validated();
 
-        if (Auth::attempt($credentials, $request->remember ?? false)) {
-            $request->session()->regenerate();
-
-            $user = Auth::user();
-            $token = $user->createToken('authToken')->plainTextToken;
-
-            return $this->respondWithSuccess(
-                __('Successfully logged in, please wait...'),
-                [
-                    'data' => $user,
-                    'token' => $token,
-                ]
-            );
+        if (!$token = JWTAuth::attempt($credentials)) {
+            return $this->respondNotFound(__('Login failed. Please check your credentials.'));
         }
 
-        return $this->respondNotFound(__('Login failed. Please check your credentials.'));
+        $user = Auth::user();
+        $refreshToken = $this->createRefreshToken($user);
+
+        return $this->respondWithSuccess(
+            __('Successfully logged in, please wait...'),
+            [
+                'user' => $user,
+                'access_token' => $token,
+                'refresh_token' => $refreshToken,
+                'token_type' => 'bearer',
+                'expires_in' => JWTAuth::factory()->getTTL() * 60 // Fixed this line
+            ]
+        );
+    }
+
+    protected function createRefreshToken($user)
+    {
+        return JWTAuth::getJWTProvider()->encode([
+            'sub' => $user->id,
+            'iat' => time(),
+            'exp' => time() + config('jwt.refresh_ttl') * 60
+        ]);
     }
 }
