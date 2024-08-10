@@ -44,6 +44,9 @@ const AppMenu = () => {
         {
             label: 'UI Components',
             items: [
+                { label: '1', icon: 'pi pi-fw pi-pencil', to: '/uikit/1' },
+                { label: '2', icon: 'pi pi-fw pi-file-o', to: '/uikit/2' },
+                { label: '3', icon: 'pi pi-fw pi-list', to: '/uikit/3' },
                 { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
                 { label: 'Input', icon: 'pi pi-fw pi-check-square', to: '/uikit/input' },
                 { label: 'Float Label', icon: 'pi pi-fw pi-bookmark', to: '/uikit/floatlabel' },
