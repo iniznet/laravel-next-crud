@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
-import { DataTable, DataTableValueArray } from 'primereact/datatable';
+import { InputText } from 'primereact/inputtext';
+import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
 import { TabView, TabPanel } from 'primereact/tabview';
@@ -41,17 +41,15 @@ const NotaServicePage: React.FC = () => {
         NOMINALBAYAR: 0,
         DP: 0,
         PENERIMA: '',
-        QUEUE_NUMBER: 0,
+        QUEUE_NUMBER: 0
     });
     const [services, setServices] = useState<Service[]>([]);
-    const [barangList, setBarangList] = useState<BarangWithServices[]>([
-        { KODE: '1', NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian', services: [], ESTIMASIHARGA: 0 }
-    ]);
+    const [barangList, setBarangList] = useState<BarangWithServices[]>([{ KODE: '1', NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian', services: [], ESTIMASIHARGA: 0 }]);
     const [notaServiceDialog, setNotaServiceDialog] = useState(false);
     const [deleteNotaServiceDialog, setDeleteNotaServiceDialog] = useState(false);
     const [deleteNotaServicesDialog, setDeleteNotaServicesDialog] = useState(false);
     const [selectedNotaServices, setSelectedNotaServices] = useState<NotaService[]>([]);
-    const [globalFilter, setGlobalFilter] = useState('');
+    const [globalFilter, setGlobalFilter] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [dataLoaded, setDataLoaded] = useState(false);
     const toast = useRef<Toast>(null);
@@ -77,7 +75,6 @@ const NotaServicePage: React.FC = () => {
         }
     };
 
-
     const loadNotaServices = async () => {
         setLoading(true);
 
@@ -95,7 +92,7 @@ const NotaServicePage: React.FC = () => {
 
     const handleInputChange = (e: { target: { name: string; value: string | number } }) => {
         const { name, value } = e.target;
-        setNota(prev => ({ ...prev, [name]: value }));
+        setNota((prev) => ({ ...prev, [name]: value }));
     };
 
     const openNew = async () => {
@@ -115,13 +112,18 @@ const NotaServicePage: React.FC = () => {
                 NOMINALBAYAR: 0,
                 DP: 0,
                 PENERIMA: '',
-                QUEUE_NUMBER: 0,
+                QUEUE_NUMBER: 0
             });
-            setBarangList([{
-                KODE: '1', NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian',
-                services: [],
-                ESTIMASIHARGA: 0,
-            }]);
+            setBarangList([
+                {
+                    KODE: '1',
+                    NAMA: '',
+                    KETERANGAN: '',
+                    STATUSAMBIL: 'Antrian',
+                    services: [],
+                    ESTIMASIHARGA: 0
+                }
+            ]);
             setIsNewRecord(true);
             setNotaServiceDialog(true);
         } catch (error) {
@@ -188,7 +190,7 @@ const NotaServicePage: React.FC = () => {
     const editNotaService = (notaService: NotaService) => {
         setNota({ ...notaService });
 
-        const updatedBarangList = notaService.barangList?.map(barang => {
+        const updatedBarangList = notaService.barangList?.map((barang) => {
             const newEstimatedPrice = barang.services.reduce((sum, service) => sum + service.HARGA, 0);
             return { ...barang, ESTIMASIHARGA: newEstimatedPrice };
         });
@@ -224,7 +226,7 @@ const NotaServicePage: React.FC = () => {
 
     const deleteSelectedNotaServices = async () => {
         try {
-            await NotaServiceAPI.bulkDelete(selectedNotaServices.map(ns => ns.KODE));
+            await NotaServiceAPI.bulkDelete(selectedNotaServices.map((ns) => ns.KODE));
             loadNotaServices();
             setDeleteNotaServicesDialog(false);
             setSelectedNotaServices([]);
@@ -240,7 +242,7 @@ const NotaServicePage: React.FC = () => {
             const barangTotal = barang.services.reduce((serviceSum, service) => serviceSum + service.HARGA, 0);
             return sum + barangTotal;
         }, 0);
-        setNota(prev => ({ ...prev, ESTIMASIHARGA: total }));
+        setNota((prev) => ({ ...prev, ESTIMASIHARGA: total }));
     }, [barangList]);
 
     useEffect(() => {
@@ -279,7 +281,7 @@ const NotaServicePage: React.FC = () => {
             <h5 className="m-0">Nota Service</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
-                <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
+                <InputText type="search" onInput={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)} placeholder="Search..." />
             </span>
         </div>
     );
@@ -289,60 +291,64 @@ const NotaServicePage: React.FC = () => {
             <Toast ref={toast} />
             <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-            {loading
-                ?
-                (
-                    <DataTable
-                        value={Array.from({ length: 5 }) as DataTableValueArray}
-                        header={header}
-                    >
-                        <Column style={{ width: '4rem' }} body={() => <Skeleton />} />
-                        <Column style={{ width: '10rem' }} header="No. Servis" body={() => <Skeleton />} />
-                        <Column style={{ width: '10rem' }} header="Tanggal" body={() => <Skeleton />} />
-                        <Column style={{ width: '10rem' }} header="Estimasi Selesai" body={() => <Skeleton />} />
-                        <Column style={{ width: '10rem' }} header="Pemilik" body={() => <Skeleton />} />
-                        <Column style={{ width: '10rem' }} header="No Telepon" body={() => <Skeleton />} />
-                        <Column style={{ width: '10rem' }} header="Estimasi Harga" body={() => <Skeleton />} />
-                        <Column style={{ width: '10rem' }} body={() => <Skeleton />} />
-                    </DataTable>
-                )
-                :
-                (
+            {loading ? (
+                <DataTable value={Array.from({ length: 5 }, (_, index) => ({ id: index }))} header={header}>
+                <Column style={{ width: '4rem' }} body={() => <Skeleton />} />
+                <Column style={{ width: '10rem' }} header="No. Servis" body={() => <Skeleton />} />
+                <Column style={{ width: '10rem' }} header="Tanggal" body={() => <Skeleton />} />
+                <Column style={{ width: '10rem' }} header="Estimasi Selesai" body={() => <Skeleton />} />
+                <Column style={{ width: '10rem' }} header="Pemilik" body={() => <Skeleton />} />
+                <Column style={{ width: '10rem' }} header="No Telepon" body={() => <Skeleton />} />
+                <Column style={{ width: '10rem' }} header="Estimasi Harga" body={() => <Skeleton />} />
+                <Column style={{ width: '10rem' }} body={() => <Skeleton />} />
+            </DataTable>
+            ) : (
+                <DataTable
+                    ref={dt}
+                    value={notaServices}
+                    selection={selectedNotaServices}
+                    onSelectionChange={(e) => setSelectedNotaServices(e.value)}
+                    dataKey="KODE"
+                    paginator
+                    rows={10}
+                    rowsPerPageOptions={[5, 10, 25]}
+                    className="datatable-responsive"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} nota service"
+                    globalFilter={globalFilter}
+                    emptyMessage="Tidak ada nota service yang ditemukan"
+                    header={header}
+                    responsiveLayout="scroll"
+                    filters={{
+                        global: { value: globalFilter, matchMode: 'contains' }
+                    }}
+                >
+                    <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
+                    <Column field="KODE" header="No. Servis" sortable></Column>
+                    <Column field="TGL" header="Tanggal" sortable body={(rowData) => <span>{new Date(rowData.TGL).toLocaleDateString()}</span>}></Column>
+                    <Column field="ESTIMASISELESAI" header="Estimasi Selesai" sortable body={(rowData) => <span>{new Date(rowData.ESTIMASISELESAI).toLocaleDateString()}</span>}></Column>
+                    <Column field="PEMILIK" header="Pemilik" sortable></Column>
+                    <Column field="NOTELEPON" header="No Telepon" sortable></Column>
+                    <Column field="ESTIMASIHARGA" header="Estimasi Harga" sortable body={(rowData) => formatCurrency(rowData.ESTIMASIHARGA)}></Column>
+                    <Column field="QUEUE_NUMBER" header="Antrian" sortable></Column>
+                    <Column body={actionBodyTemplate}></Column>
+                </DataTable>
+            )}
 
-                    <DataTable
-                        ref={dt}
-                        value={notaServices}
-                        selection={selectedNotaServices}
-                        onSelectionChange={(e) => setSelectedNotaServices(e.value)}
-                        dataKey="KODE"
-                        paginator
-                        rows={10}
-                        rowsPerPageOptions={[5, 10, 25]}
-                        className="datatable-responsive"
-                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} nota service"
-                        globalFilter={globalFilter}
-                        emptyMessage="Tidak ada nota service yang ditemukan"
-                        header={header}
-                        responsiveLayout="scroll"
-                    >
-                        <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                        <Column field="KODE" header="No. Servis" sortable></Column>
-                        <Column field="TGL" header="Tanggal" sortable body={(rowData) => <span>{new Date(rowData.TGL).toLocaleDateString()}</span>}></Column>
-                        <Column field="ESTIMASISELESAI" header="Estimasi Selesai" sortable body={(rowData) => <span>{new Date(rowData.ESTIMASISELESAI).toLocaleDateString()}</span>}></Column>
-                        <Column field="PEMILIK" header="Pemilik" sortable></Column>
-                        <Column field="NOTELEPON" header="No Telepon" sortable></Column>
-                        <Column field="ESTIMASIHARGA" header="Estimasi Harga" sortable body={(rowData) => formatCurrency(rowData.ESTIMASIHARGA)}></Column>
-                        <Column field="QUEUE_NUMBER" header="Antrian" sortable></Column>
-                        <Column body={actionBodyTemplate}></Column>
-                    </DataTable>
-                )}
-
-            <Dialog visible={notaServiceDialog} style={{ width: '85%' }} header="Detail Nota Service" modal className="p-fluid" footer={
-                <div className="flex justify-content-end">
-                    <Button label="Batal" icon="pi pi-times" text onClick={hideDialog} />
-                    <Button label="Simpan" icon="pi pi-check" text onClick={saveNotaService} />
-                </div>} onHide={hideDialog}>
+            <Dialog
+                visible={notaServiceDialog}
+                style={{ width: '85%' }}
+                header="Detail Nota Service"
+                modal
+                className="p-fluid"
+                footer={
+                    <div className="flex justify-content-end">
+                        <Button label="Batal" icon="pi pi-times" text onClick={hideDialog} />
+                        <Button label="Simpan" icon="pi pi-check" text onClick={saveNotaService} />
+                    </div>
+                }
+                onHide={hideDialog}
+            >
                 <TabView>
                     <TabPanel header="Data Klien">
                         <div className="p-fluid">
@@ -363,17 +369,12 @@ const NotaServicePage: React.FC = () => {
                             </div>
                             <div className="field">
                                 <label htmlFor="tanggal">Tanggal</label>
-                                <Calendar id="tanggal" name="TGL" value={new Date(nota.TGL)} onChange={(e) => setNota(prev => ({ ...prev, TGL: e.value ? e.value.toISOString().split('T')[0] : '' }))} showIcon />
+                                <Calendar id="tanggal" name="TGL" value={new Date(nota.TGL)} onChange={(e) => setNota((prev) => ({ ...prev, TGL: e.value ? e.value.toISOString().split('T')[0] : '' }))} showIcon />
                             </div>
                         </div>
                     </TabPanel>
                     <TabPanel header="Pilih Jasa dan Barang">
-                        <PilihJasaBarang
-                            barangList={barangList}
-                            setBarangList={setBarangList}
-                            servicesAndStock={servicesAndStock}
-                            errors={errors}
-                        />
+                        <PilihJasaBarang barangList={barangList} setBarangList={setBarangList} servicesAndStock={servicesAndStock} errors={errors} />
                     </TabPanel>
                     <TabPanel header="Ringkasan">
                         <div className="p-fluid">
@@ -383,7 +384,13 @@ const NotaServicePage: React.FC = () => {
                             </div>
                             <div className="field">
                                 <label htmlFor="estimasiSelesai">Estimasi Selesai</label>
-                                <Calendar id="estimasiSelesai" name="ESTIMASISELESAI" value={new Date(nota.ESTIMASISELESAI)} onChange={(e) => setNota(prev => ({ ...prev, ESTIMASISELESAI: e.value ? e.value.toISOString().split('T')[0] : '' }))} showIcon />
+                                <Calendar
+                                    id="estimasiSelesai"
+                                    name="ESTIMASISELESAI"
+                                    value={new Date(nota.ESTIMASISELESAI)}
+                                    onChange={(e) => setNota((prev) => ({ ...prev, ESTIMASISELESAI: e.value ? e.value.toISOString().split('T')[0] : '' }))}
+                                    showIcon
+                                />
                             </div>
                             <div className="field">
                                 <label htmlFor="dp">DP</label>
@@ -398,35 +405,45 @@ const NotaServicePage: React.FC = () => {
                 </TabView>
             </Dialog>
 
-            <Dialog visible={deleteNotaServiceDialog} style={{ width: '450px' }} header="Confirm" modal footer={<div className="flex justify-content-end">
-                <Button label="Batal" icon="pi pi-times" text onClick={hideDeleteNotaServiceDialog} />
-                <Button label="Ya" icon="pi pi-check" text onClick={deleteNotaService} />
-            </div>} onHide={hideDeleteNotaServiceDialog}>
+            <Dialog
+                visible={deleteNotaServiceDialog}
+                style={{ width: '450px' }}
+                header="Confirm"
+                modal
+                footer={
+                    <div className="flex justify-content-end">
+                        <Button label="Batal" icon="pi pi-times" text onClick={hideDeleteNotaServiceDialog} />
+                        <Button label="Ya" icon="pi pi-check" text onClick={deleteNotaService} />
+                    </div>
+                }
+                onHide={hideDeleteNotaServiceDialog}
+            >
                 <div className="flex align-items-center justify-content-center">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                    {nota && (
-                        <span>
-                            Apakah Anda yakin ingin menghapus nota service ini?
-                        </span>
-                    )}
+                    {nota && <span>Apakah Anda yakin ingin menghapus nota service ini?</span>}
                 </div>
             </Dialog>
 
-            <Dialog visible={deleteNotaServicesDialog} style={{ width: '450px' }} header="Confirm" modal footer={<div className="flex justify-content-end">
-                <Button label="Batal" icon="pi pi-times" text onClick={hideDeleteNotaServicesDialog} />
-                <Button label="Ya" icon="pi pi-check" text onClick={deleteSelectedNotaServices} />
-            </div>} onHide={hideDeleteNotaServicesDialog}>
+            <Dialog
+                visible={deleteNotaServicesDialog}
+                style={{ width: '450px' }}
+                header="Confirm"
+                modal
+                footer={
+                    <div className="flex justify-content-end">
+                        <Button label="Batal" icon="pi pi-times" text onClick={hideDeleteNotaServicesDialog} />
+                        <Button label="Ya" icon="pi pi-check" text onClick={deleteSelectedNotaServices} />
+                    </div>
+                }
+                onHide={hideDeleteNotaServicesDialog}
+            >
                 <div className="flex align-items-center justify-content-center">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                     {nota && <span>Apakah Anda yakin ingin menghapus nota service yang dipilih?</span>}
                 </div>
             </Dialog>
 
-            <NotaServiceInvoice
-                notaService={invoiceNotaService}
-                visible={showInvoice}
-                onClose={() => setShowInvoice(false)}
-            />
+            <NotaServiceInvoice notaService={invoiceNotaService} visible={showInvoice} onClose={() => setShowInvoice(false)} />
         </div>
     );
 };

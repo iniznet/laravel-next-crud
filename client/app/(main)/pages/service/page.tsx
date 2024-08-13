@@ -18,6 +18,7 @@ import { formatCurrency } from '@/app/utils/currency';
 import { Service } from '@/types/service';
 import { Skeleton } from 'primereact/skeleton';
 import { FieldErrors } from '@/types/message';
+import { FilterMatchMode } from 'primereact/api';
 
 const ServicePage = () => {
     let emptyService: Service = {
@@ -168,6 +169,10 @@ const ServicePage = () => {
         setService(_service);
     };
 
+    const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setGlobalFilter(e.target.value);
+    };
+
     const leftToolbarTemplate = () => {
         return (
             <React.Fragment>
@@ -233,7 +238,11 @@ const ServicePage = () => {
             <h5 className="m-0">Master Jasa</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
-                <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
+                <InputText 
+                    type="search" 
+                    onInput={(e: React.ChangeEvent<HTMLInputElement>) => onGlobalFilterChange(e)} 
+                    placeholder="Search..." 
+                />
             </span>
         </div>
     );
@@ -277,21 +286,22 @@ const ServicePage = () => {
                         </DataTable>
                     ) : (
                         <DataTable
-                            ref={dt}
-                            value={services}
-                            selection={selectedServices}
-                            onSelectionChange={onSelectionChange}
-                            dataKey="KODE"  // Ensure this key is unique for each row
-                            paginator
-                            rows={10}
-                            rowsPerPageOptions={[5, 10, 25]}
-                            className="datatable-responsive"
-                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                            currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} jasa"
-                            globalFilter={globalFilter}
-                            emptyMessage="Tidak ada jasa yang ditemukan"
-                            header={header}
-                            responsiveLayout="scroll"
+                        ref={dt}
+                        value={services}
+                        selection={selectedServices}
+                        onSelectionChange={onSelectionChange}
+                        dataKey="KODE"
+                        paginator
+                        rows={10}
+                        rowsPerPageOptions={[5, 10, 25]}
+                        className="datatable-responsive"
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                        currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} jasa"
+                        globalFilterFields={['KODE', 'KETERANGAN']} // Add the fields you want to search
+                        filters={{ global: { value: globalFilter, matchMode: 'contains' } }}
+                        emptyMessage="Tidak ada jasa yang ditemukan"
+                        header={header}
+                        responsiveLayout="scroll"
                         >
                             <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
                             <Column field="name" header="Name" body={kodeBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
