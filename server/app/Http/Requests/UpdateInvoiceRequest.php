@@ -24,6 +24,7 @@ class UpdateInvoiceRequest extends FormRequest
             'from' => 'required|string|max:255',
             'phone_number' => 'required|string|max:20',
             'notes' => 'nullable|string',
+            'queued' => 'nullable|boolean',
             'subtotal' => 'required|numeric|min:0',
             'tax' => 'required|numeric|min:0',
             'amount_paid' => 'required|numeric|min:0',

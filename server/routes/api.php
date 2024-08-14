@@ -2,18 +2,19 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\QueueController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MasterJasaController;
+use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\NotaServiceController;
+use App\Http\Controllers\Auth\RefreshController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BarangServiceController;
 use App\Http\Controllers\SparepartServiceController;
 use App\Http\Controllers\Auth\AuthenticatedController;
-use App\Http\Controllers\Auth\RefreshController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\PembayaranController;
-use App\Http\Controllers\StockController;
 
 Route::apiResource('barang-service', BarangServiceController::class);
 
@@ -47,3 +48,7 @@ Route::prefix('auth')->group(function () {
     Route::post('refresh', RefreshController::class);
     Route::post('logout', LogoutController::class);
 });
+
+
+Route::get('/queue', [QueueController::class, 'index']);
+Route::put('/queue', [QueueController::class, 'update']);

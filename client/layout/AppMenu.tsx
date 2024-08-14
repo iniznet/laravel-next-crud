@@ -39,6 +39,16 @@ const AppMenu = () => {
                 icon: 'pi pi-fw pi-print',
                 to: '/pages/invoice'
             },
+            {
+                label: 'Antrian Admin',
+                icon: 'pi pi-fw pi-users',
+                to: '/pages/queue-admin'
+            },
+            {
+                label: 'Antrian Klien',
+                icon: 'pi pi-fw pi-users',
+                to: '/pages/queue-visitor'
+            },
             ]
         },
         {

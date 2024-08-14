@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             MasterJasaSeeder::class,
             NotaServiceSeeder::class,
             SparepartServiceSeeder::class,
+            QueueCounterSeeder::class,
         ]);
     }
 }

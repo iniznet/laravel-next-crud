@@ -69,7 +69,7 @@ const NotaServiceInvoice: React.FC<NotaServiceInvoiceProps> = ({ notaService, vi
             doc.text(`Kustomer: ${notaService.PEMILIK}`, 20, 40);
             doc.text(`No Telepon: ${notaService.NOTELEPON}`, 20, 45);
             doc.text(`Estimasi Selesai: ${formatDate(notaService.ESTIMASISELESAI)}`, 20, 50);
-            doc.text(`Antrian: ${notaService.QUEUE_NUMBER || 'N/A'}`, 20, 55);
+            doc.text(`Antrian: ${notaService.ANTRIAN || 'N/A'}`, 20, 55);
 
             let startY = 65;
             let overallTotal = 0;
@@ -170,7 +170,7 @@ const NotaServiceInvoice: React.FC<NotaServiceInvoiceProps> = ({ notaService, vi
             doc.text(`Kustomer: ${notaService.PEMILIK}`, 5, 21);
             doc.text(`No Telepon: ${notaService.NOTELEPON}`, 5, 24);
             doc.text(`Estimasi Selesai: ${formatDate(notaService.ESTIMASISELESAI)}`, 5, 27);
-            doc.text(`Antrian: ${notaService.QUEUE_NUMBER || 'N/A'}`, 5, 30);
+            doc.text(`Antrian: ${notaService.ANTRIAN || 'N/A'}`, 5, 30);
 
             drawSeparator(33);
 

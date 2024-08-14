@@ -14,7 +14,7 @@ export interface NotaService {
     NOMINALBAYAR: number;
     DP: number;
     PENERIMA: string;
-    QUEUE_NUMBER: number;
+    ANTRIAN: number;
     selectedServices?: Service[];
     barangList?: BarangWithServices[];
 }
