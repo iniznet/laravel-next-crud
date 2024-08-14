@@ -8,6 +8,7 @@ use App\Models\SparepartService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\NotaServiceRequest;
 use App\Models\MasterJasa;
+use App\Models\Queue;
 use App\Models\Stock;
 use DB;
 use Illuminate\Http\Request;
@@ -37,7 +38,7 @@ class NotaServiceController extends Controller
                 'PENERIMA' => $notaService->PENERIMA,
                 'DATETIME' => $notaService->DATETIME,
                 'USERNAME' => $notaService->USERNAME,
-                'QUEUE_NUMBER' => $notaService->queue->QUEUE_NUMBER ?? null,
+                'ANTRIAN' => $notaService->queue->number ?? null,
                 'barangList' => $notaService->barangList->map(function ($barang) {
                     return [
                         'KODE' => $barang->KODE,
@@ -130,7 +131,7 @@ class NotaServiceController extends Controller
             'PENERIMA' => $notaService->PENERIMA,
             'DATETIME' => $notaService->DATETIME,
             'USERNAME' => $notaService->USERNAME,
-            'QUEUE_NUMBER' => $notaService->queue->QUEUE_NUMBER ?? null,
+            'ANTRIAN' => $notaService->queue->number ?? null,
             'barangList' => $notaService->barangList->map(function ($barang) {
                 return [
                     'KODE' => $barang->KODE,
@@ -163,8 +164,7 @@ class NotaServiceController extends Controller
         $data['ESTIMASIHARGA'] = collect($data['barangList'])->sum('ESTIMASIHARGA');
 
         $notaService = NotaService::where('KODE', $kode)->firstOrFail();
-
-        $notaService->update($data);
+        $notaService->fill($data)->save();
 
         // Process and save barang list with services
         $notaService->barangList()->delete();

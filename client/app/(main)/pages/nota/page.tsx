@@ -41,7 +41,7 @@ const NotaServicePage: React.FC = () => {
         NOMINALBAYAR: 0,
         DP: 0,
         PENERIMA: '',
-        QUEUE_NUMBER: 0
+        ANTRIAN: 0,
     });
     const [services, setServices] = useState<Service[]>([]);
     const [barangList, setBarangList] = useState<BarangWithServices[]>([{ KODE: '1', NAMA: '', KETERANGAN: '', STATUSAMBIL: 'Antrian', services: [], ESTIMASIHARGA: 0 }]);
@@ -112,7 +112,7 @@ const NotaServicePage: React.FC = () => {
                 NOMINALBAYAR: 0,
                 DP: 0,
                 PENERIMA: '',
-                QUEUE_NUMBER: 0
+                ANTRIAN: 0,
             });
             setBarangList([
                 {
@@ -330,7 +330,7 @@ const NotaServicePage: React.FC = () => {
                     <Column field="PEMILIK" header="Pemilik" sortable></Column>
                     <Column field="NOTELEPON" header="No Telepon" sortable></Column>
                     <Column field="ESTIMASIHARGA" header="Estimasi Harga" sortable body={(rowData) => formatCurrency(rowData.ESTIMASIHARGA)}></Column>
-                    <Column field="QUEUE_NUMBER" header="Antrian" sortable></Column>
+                    <Column field="ANTRIAN" header="Antrian" sortable></Column>
                     <Column body={actionBodyTemplate}></Column>
                 </DataTable>
             )}

@@ -13,6 +13,7 @@ export interface Invoice {
     from: string;
     phone_number: string;
     notes: string;
+    queued: boolean;
     subtotal: number;
     tax: number;
     total: number;

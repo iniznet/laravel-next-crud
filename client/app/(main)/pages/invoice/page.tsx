@@ -21,6 +21,7 @@ import { classNames } from 'primereact/utils';
 import { Skeleton } from 'primereact/skeleton';
 import { InputTextarea } from 'primereact/inputtextarea';
 import TagihanInvoice from '@/app/components/invoices/TagihanInvoice';
+import { InputSwitch } from 'primereact/inputswitch';
 
 const InvoicePage: React.FC = () => {
     const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -34,6 +35,7 @@ const InvoicePage: React.FC = () => {
         from: '',
         phone_number: '',
         notes: '',
+        queued: false,
         subtotal: 0,
         tax: 11,
         total: 0,
@@ -114,6 +116,7 @@ const InvoicePage: React.FC = () => {
                 from: '',
                 phone_number: '',
                 notes: '',
+                queued: false,
                 subtotal: 0,
                 tax: 11,
                 total: 0,
@@ -166,6 +169,7 @@ const InvoicePage: React.FC = () => {
                     from: '',
                     phone_number: '',
                     notes: '',
+                    queued: false,
                     subtotal: 0,
                     tax: 11,
                     total: 0,
@@ -204,6 +208,7 @@ const InvoicePage: React.FC = () => {
                 from: '',
                 phone_number: '',
                 notes: '',
+                queued: false,
                 subtotal: 0,
                 tax: 11,
                 total: 0,
@@ -506,8 +511,15 @@ const InvoicePage: React.FC = () => {
 
                         <div className="formgrid grid mt-4">
                             <div className="field col-6">
-                                <label htmlFor="notes">Catatan</label>
-                                <InputTextarea id="notes" value={invoice.notes} onChange={(e) => onInputChange(e as any, 'notes')} autoResize rows={5} />
+                                <div className="mb-2">
+                                    <label htmlFor="queued" className="block">Masukkan ke dalam Antrian</label>
+                                    <InputSwitch id="queued" checked={invoice.queued} onChange={(e) => onInputChange(e as any, 'queued')} />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="notes">Catatan</label>
+                                    <InputTextarea id="notes" value={invoice.notes} onChange={(e) => onInputChange(e as any, 'notes')} autoResize rows={5} />
+                                </div>
                             </div>
                             <div className="field col-6">
                                 <div className="formgrid grid">

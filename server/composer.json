@@ -9,10 +9,13 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
+        "beyondcode/laravel-websockets": "^1.14",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.10",
+        "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
-        "php-open-source-saver/jwt-auth": "^2.7"
+        "php-open-source-saver/jwt-auth": "^2.7",
+        "pusher/pusher-php-server": "^7.2"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.1",

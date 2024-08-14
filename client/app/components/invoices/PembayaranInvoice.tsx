@@ -89,7 +89,7 @@ const PembayaranInvoice: React.FC<PembayaranInvoiceProps> = ({ notaService, visi
             doc.text(`${notaService.FAKTUR}`, pageWidth - 20, 47, { align: 'right' });
             doc.text(`Date: ${formatDate(notaService.TGL)}`, pageWidth - 20, 52, { align: 'right' });
             doc.text(`Due Date: ${formatDate(notaService.ESTIMASISELESAI)}`, pageWidth - 20, 57, { align: 'right' });
-            doc.text(`Work Order #: ${notaService.QUEUE_NUMBER || 'N/A'}`, pageWidth - 20, 62, { align: 'right' });
+            doc.text(`Work Order #: ${notaService.ANTRIAN || 'N/A'}`, pageWidth - 20, 62, { align: 'right' });
 
             let startY = 70;
             let overallTotal = 0;
