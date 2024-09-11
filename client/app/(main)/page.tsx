@@ -315,13 +315,10 @@ const Dashboard: React.FC = () => {
                     }}
                 >
                     <div>
-                        <div className="text-blue-100 font-medium text-xl mt-2 mb-3">TAKE THE NEXT STEP</div>
-                        <div className="text-white font-medium text-5xl">Try Our Services</div>
+                        <div className="text-blue-100 font-medium text-xl mt-2 mb-3">PROJECT</div>
+                        <div className="text-white font-medium text-5xl">W     N     C</div>
                     </div>
                     <div className="mt-4 mr-auto md:mt-0 md:mr-0">
-                        <Link href="/services" className="p-button font-bold px-5 py-3 p-button-warning p-button-rounded p-button-raised">
-                            Get Started
-                        </Link>
                     </div>
                 </div>
             </div>

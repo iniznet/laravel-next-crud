@@ -32,7 +32,7 @@ export const InvoiceAPI = {
     },
 
     bulkDelete: async (ids: string[]): Promise<void> => {
-        const response = await Api.post<void>(`/invoices/bulk`, { ids });
+        const response = await Api.post<void>(`/invoices/bulk-destroy`, { ids });
         if (!response.success) throw new Error(response.message);
     },
 

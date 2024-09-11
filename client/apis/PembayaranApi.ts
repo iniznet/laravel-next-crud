@@ -42,7 +42,7 @@ export const PembayaranAPI = {
     },
 
     bulkDelete: async (ids: string[]): Promise<void> => {
-        const response = await Api.post<void>('/pembayaran/bulk', { ids });
+        const response = await Api.post<void>('/pembayaran/bulk-destroy', { ids });
         if (!response.success) throw new Error(response.message);
     },
 

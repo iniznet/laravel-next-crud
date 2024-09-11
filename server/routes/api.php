@@ -31,14 +31,15 @@ Route::apiResource('sparepart-service', SparepartServiceController::class);
 
 Route::get('pembayaran/new-identifiers', [PembayaranController::class, 'newIdentifiers'])->name('pembayaran.new-identifiers');
 Route::get('pembayaran/services', [PembayaranController::class, 'services'])->name('pembayaran.services');
-Route::post('pembayaran/bulk', [PembayaranController::class, 'bulkDestroy'])->name('pembayaran.bulk-destroy');
+Route::post('pembayaran/bulk-destroy', [PembayaranController::class, 'bulkDestroy'])->name('pembayaran.bulk-destroy');
 Route::apiResource('pembayaran', PembayaranController::class);
 
 Route::get('stocks/new-kode', [StockController::class, 'getNewKode']);
-Route::post('stocks/bulk', [StockController::class, 'bulkDestroy'])->name('stock.bulk-destroy');
+Route::post('stocks/bulk-destroy', [StockController::class, 'bulkDestroy'])->name('stock.bulk-destroy');
 Route::apiResource('stocks', StockController::class);
 
 Route::get('invoices/new-identifiers', [InvoiceController::class, 'newIdentifiers'])->name('invoices.new-identifiers');
+Route::post('invoisces/bulk-destroy', [InvoiceController::class, 'bulkDestroy'])->name('invoice.bulk-destroy');
 Route::apiResource('invoices', InvoiceController::class);
 
 Route::prefix('auth')->group(function () {
