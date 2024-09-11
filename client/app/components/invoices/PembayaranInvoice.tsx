@@ -7,9 +7,9 @@ import { formatCurrency } from '@/app/utils/currency';
 import { NotaService } from '@/types/notaservice';
 
 interface PembayaranInvoiceProps {
-    notaService: NotaService;
-    onClose: () => void;
+    notaService: NotaService | null;
     visible: boolean;
+    onClose: () => void;
 }
 
 const PembayaranInvoice: React.FC<PembayaranInvoiceProps> = ({ notaService, visible, onClose }) => {

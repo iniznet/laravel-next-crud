@@ -297,7 +297,6 @@ const PembayaranPage: React.FC = () => {
                     onInput={(e) => setGlobalFilter(e.currentTarget.value)}
                     placeholder="Search..."
                 />
-            </span>
         </div>
     );
 
@@ -452,7 +451,6 @@ const PembayaranPage: React.FC = () => {
                             {pembayaran && <span>Apa kamu yakin ingin menghapus pembayaran yang dipilih?</span>}
                         </div>
                         </Dialog>
-
 {showInvoice && invoiceNotaService && <PembayaranInvoice notaService={invoiceNotaService} onClose={() => setShowInvoice(false)} visible={showInvoice} />}
                 </div>
             </div>
