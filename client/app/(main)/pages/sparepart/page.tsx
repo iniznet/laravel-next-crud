@@ -25,7 +25,7 @@ const StockPage = () => {
         KODE_TOKO: '',
         NAMA: '',
         HB: 0,
-        HJ: 0
+        HJ: 0,
     };
 
     const [stocks, setStocks] = useState<Stock[]>([]);
@@ -142,7 +142,7 @@ const StockPage = () => {
 
     const deleteSelectedStocks = async () => {
         try {
-            await StockAPI.bulkDelete(selectedStocks.map((s) => s.ID!.toString()));
+            await StockAPI.bulkDelete(selectedStocks.map(s => s.ID!.toString()));
             loadStocks();
             setDeleteStocksDialog(false);
             setSelectedStocks([]);
@@ -258,7 +258,10 @@ const StockPage = () => {
                     <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
                     {loading ? (
-                        <DataTable value={Array.from({ length: 5 }) as DataTableValueArray} header={header}>
+                        <DataTable
+                            value={Array.from({ length: 5 }) as DataTableValueArray}
+                            header={header}
+                        >
                             <Column style={{ width: '4rem' }} body={() => <Skeleton />} />
                             <Column style={{ width: '10rem' }} header="Kode" body={() => <Skeleton />} />
                             <Column header="Nama" body={() => <Skeleton />} />
@@ -266,6 +269,7 @@ const StockPage = () => {
                             <Column body={() => <Skeleton />} />
                         </DataTable>
                     ) : (
+
                         <DataTable
                             ref={dt}
                             value={stocks}
@@ -290,6 +294,7 @@ const StockPage = () => {
                             <Column field="HJ" header="Harga" body={priceBodyTemplate} sortable></Column>
                             <Column body={actionBodyTemplate}></Column>
                         </DataTable>
+
                     )}
 
                     <Dialog visible={stockDialog} style={{ width: '450px' }} header="Detail Sparepart" modal className="p-fluid" footer={stockDialogFooter} onHide={hideDialog}>
