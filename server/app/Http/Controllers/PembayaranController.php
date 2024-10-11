@@ -152,9 +152,9 @@ class PembayaranController extends Controller
         return $faktur;
     }
 
-    public function bulkDelete(Request $request)
+    public function bulkDestroy(Request $request)
     {
-        $fakturs = $request->input('fakturs', []);
+        $fakturs = $request->input('ids', []);
 
         DB::beginTransaction();
         try {

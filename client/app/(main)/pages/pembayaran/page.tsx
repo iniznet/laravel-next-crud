@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { DataTable, DataTableValue, DataTableValueArray } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -39,7 +39,7 @@ const PembayaranPage: React.FC = () => {
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const [notaServiceOptions, setNotaServiceOptions] = useState<Pembayaran[]>([]);
-    const [selectedNotaService, setSelectedNotaService] = useState<Pembayaran | null>(null);
+    const [selectedNotaService, setSelectedNotaService] = useState<Pembayaran | null>(null as Pembayaran | null);
     const [barangList, setBarangList] = useState<BarangService[]>([]);
     const [loading, setLoading] = useState(true);
     const [dataLoaded, setDataLoaded] = useState(false);
@@ -292,8 +292,11 @@ const PembayaranPage: React.FC = () => {
             <h5 className="m-0">Pembayaran</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
-                <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
-            </span>
+                <InputText
+                    type="search"
+                    onInput={(e) => setGlobalFilter(e.currentTarget.value)}
+                    placeholder="Search..."
+                />
         </div>
     );
 
@@ -345,21 +348,24 @@ const PembayaranPage: React.FC = () => {
                             :
                             (
                                 <DataTable
-                                    ref={dt}
-                                    value={pembayarans}
-                                    selection={selectedPembayarans}
-                                    onSelectionChange={(e) => setSelectedPembayarans(e.value)}
-                                    dataKey="FAKTUR"
-                                    paginator
-                                    rows={10}
-                                    rowsPerPageOptions={[5, 10, 25]}
-                                    className="datatable-responsive"
-                                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                                    currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} pembayaran"
-                                    globalFilter={globalFilter}
-                                    emptyMessage="Tidak ada data pembayaran yang ditemukan."
-                                    header={header}
-                                    responsiveLayout="scroll"
+                                ref={dt}
+                                value={pembayarans}
+                                selection={selectedPembayarans}
+                                onSelectionChange={(e) => setSelectedPembayarans(e.value)}
+                                dataKey="FAKTUR"
+                                paginator
+                                rows={10}
+                                rowsPerPageOptions={[5, 10, 25]}
+                                className="datatable-responsive"
+                                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} pembayaran"
+                                globalFilter={globalFilter}
+                                emptyMessage="Tidak ada data pembayaran yang ditemukan."
+                                header={header}
+                                responsiveLayout="scroll"
+                                filters={{
+                                    global: { value: globalFilter, matchMode: 'contains' }
+                                }}
                                 >
                                     <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
                                     <Column field="FAKTUR" header="Faktur" sortable body={(rowData) => <span>{rowData.FAKTUR}</span>}></Column>
@@ -367,7 +373,7 @@ const PembayaranPage: React.FC = () => {
                                     <Column field="PEMILIK" header="Pemilik" sortable body={(rowData) => <span>{rowData.PEMILIK}</span>}></Column>
                                     <Column field="TGLBAYAR" header="Tanggal Bayar" sortable body={(rowData) => <span>{new Date(rowData.TGLBAYAR).toLocaleDateString()}</span>}></Column>
                                     <Column field="HARGA" header="Total Harga" sortable body={(rowData) => <span>{formatCurrency(rowData.HARGA)}</span>}></Column>
-                                    <Column header="Status" body={(rowData) => <span>{calculateLunas() ? 'Lunas' : 'Belum Lunas'}</span>}></Column>
+                                    <Column header="Status" body={(rowData) => <span className={classNames({ 'text-green-500': calculateLunas(), 'text-red-500': !calculateLunas() })}>{calculateLunas() ? 'Lunas' : 'Belum Lunas'}</span>}></Column>
                                     <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                                 </DataTable>
                             )
@@ -444,13 +450,8 @@ const PembayaranPage: React.FC = () => {
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                             {pembayaran && <span>Apa kamu yakin ingin menghapus pembayaran yang dipilih?</span>}
                         </div>
-                    </Dialog>
-
-                    <PembayaranInvoice
-                        notaService={invoiceNotaService}
-                        visible={showInvoice}
-                        onClose={() => setShowInvoice(false)}
-                    />
+                        </Dialog>
+{showInvoice && invoiceNotaService && <PembayaranInvoice notaService={invoiceNotaService} onClose={() => setShowInvoice(false)} visible={showInvoice} />}
                 </div>
             </div>
         </div>
